@@ -15,7 +15,7 @@ export async function createInterview(formData: FormData) {
 
   if (error) {
       console.error(error);
-      throw new Error("Failed to create interview");
+      return { error: `Interview creation failed: ${error.message}` };
   }
 
   // 候補者のためのトークンを作成
@@ -25,7 +25,7 @@ export async function createInterview(formData: FormData) {
 
   if (tokenError) {
       console.error(tokenError);
-      throw new Error("Failed to create token");
+      return { error: `Token creation failed: ${tokenError.message}` };
   }
 
   redirect(`/interviews/${interview.id}/share?token=${tokenData.token}`);

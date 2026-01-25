@@ -13,10 +13,14 @@ export function CreateInterviewForm() {
       setLoading(true);
       setError(null);
       try {
-        await createInterview(formData);
+        const result = await createInterview(formData);
+        if (result && result.error) {
+            setError(result.error);
+            setLoading(false);
+        }
       } catch (e) {
         console.error(e);
-        setError("エラーが発生しました。時間を置いて再試行するか、管理者に問い合わせてください。");
+        setError("予期せぬエラーが発生しました: " + (e instanceof Error ? e.message : String(e)));
         setLoading(false);
       }
   }
