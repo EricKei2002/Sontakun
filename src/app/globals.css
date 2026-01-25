@@ -24,6 +24,8 @@
   --color-ring: hsl(263 70% 50%);
 
   --radius: 0.5rem;
+
+  --font-sans: var(--font-noto-sans-jp), var(--font-geist-sans), sans-serif;
 }
 
 @layer base {

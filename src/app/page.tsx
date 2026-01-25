@@ -1,21 +1,50 @@
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 text-center">
-      <div className="mb-8 relative w-40 h-40 rounded-full overflow-hidden border-4 border-primary shadow-2xl shadow-primary/50 animate-bounce">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/sontakun.jpg" alt="Sontakun" className="object-cover w-full h-full" />
+    <main className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-6 text-center">
+      <div className="relative mb-8 w-48 h-48 sm:w-64 sm:h-64 rounded-full p-2 bg-linear-to-br from-indigo-500/20 to-purple-500/20 border border-white/10 backdrop-blur-sm animate-float">
+        <div className="w-full h-full rounded-full overflow-hidden ring-4 ring-primary/50 shadow-2xl shadow-primary/30">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/sontakun.jpg" alt="Sontakun" className="object-cover w-full h-full transform transition-transform hover:scale-110 duration-700" />
+        </div>
       </div>
-      <h1 className="text-6xl font-bold bg-linear-to-r from-indigo-400 to-purple-600 bg-clip-text text-transparent mb-4">
-        Sontakun
-      </h1>
-      <p className="text-xl text-muted-foreground max-w-lg mb-8">
-        空気を読むAI日程調整ツール。<br />
-        相手の都合、ランチタイム、移動時間を考慮した、<br />
-        世界で一番思いやりのあるスケジュールを提案します。
-      </p>
       
-      <div className="mt-12 p-6 rounded-xl border bg-secondary/30 backdrop-blur-sm">
-        <p className="text-sm font-mono text-muted-foreground">System Status: Initialization Complete</p>
+      <div className="space-y-4 max-w-2xl mx-auto">
+        <h1 className="text-5xl sm:text-7xl font-bold bg-linear-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent tracking-tight">
+          Sontakun
+        </h1>
+        <p className="text-xl sm:text-2xl text-muted-foreground leading-relaxed font-medium">
+          空気を読むAI日程調整ツール
+        </p>
+      </div>
+
+      <div className="mt-12 grid gap-6 sm:grid-cols-2 max-w-4xl w-full">
+         <div className="p-6 rounded-2xl bg-secondary/30 backdrop-blur-md border border-white/5 hover:bg-secondary/50 transition-colors text-left">
+            <div className="text-3xl mb-3">🍱</div>
+            <h3 className="text-lg font-bold mb-2 text-foreground">ランチタイム考慮</h3>
+            <p className="text-sm text-muted-foreground">お昼休み（12:00-13:00）を避けて提案します。お腹が空いていては良い面談はできません。</p>
+         </div>
+         <div className="p-6 rounded-2xl bg-secondary/30 backdrop-blur-md border border-white/5 hover:bg-secondary/50 transition-colors text-left">
+            <div className="text-3xl mb-3">🚃</div>
+            <h3 className="text-lg font-bold mb-2 text-foreground">移動時間確保</h3>
+            <p className="text-sm text-muted-foreground">前後の予定との間に十分な移動時間を確保。焦らず余裕を持って参加できます。</p>
+         </div>
+      </div>
+      
+      <div className="mt-12 w-full max-w-sm">
+          <Link href="/interviews/new" className="w-full">
+            <Button size="lg" className="w-full h-14 text-lg font-bold rounded-full bg-linear-to-r from-primary to-indigo-600 hover:scale-105 transition-all shadow-xl shadow-primary/20">
+              新しい面談を作成する ✨
+            </Button>
+          </Link>
+      </div>
+      
+      <div className="mt-16 p-4 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-sm animate-pulse">
+        <p className="text-xs sm:text-sm font-mono text-primary/80">
+          System Status: All Systems Operational
+        </p>
       </div>
     </main>
   );
