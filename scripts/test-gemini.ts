@@ -14,7 +14,7 @@ async function checkModelsRaw() {
           apiKey = match[1].trim();
         }
       }
-    } catch (e) {
+    } catch {
       console.warn("⚠️ Could not read .env.local");
     }
   }
@@ -33,7 +33,7 @@ async function checkModelsRaw() {
 
     if (data.models) {
       console.log("\n✅ Available Models for this Key:");
-      data.models.forEach((m: any) => {
+      data.models.forEach((m: { name: string; supportedGenerationMethods?: string[] }) => {
         if (m.supportedGenerationMethods?.includes("generateContent")) {
             console.log(`- ${m.name.replace('models/', '')}`);
         }
@@ -42,7 +42,7 @@ async function checkModelsRaw() {
       console.error("\n❌ No models found. API Error response:");
       console.error(JSON.stringify(data, null, 2));
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("\n❌ Network or Fetch Error:");
     console.error(error);
   }

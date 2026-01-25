@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sontakun (ソンタくん)
 
-## Getting Started
+Sontakun（ソンタくん）は、「空気を読む」AI日程調整ツールです。
 
-First, run the development server:
+## 🚀 セットアップ手順
+
+### 1. データベースのセットアップ (Supabase)
+
+1. Supabaseダッシュボードにアクセスします。
+2. 新しいプロジェクトを作成します。
+3. SQL Editor に移動します。
+4. `supabase/schema.sql` の内容を実行します。
+
+### 2. 環境変数
+
+1. サンプルの環境変数ファイルをコピーします：
+
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+2. キーを入力します：
+
+   - `NEXT_PUBLIC_SUPABASE_URL`: Supabase Settings > API から取得。
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase Settings > API から取得。
+   - `GEMINI_API_KEY`: Google AI Studio から取得。
+
+### 3. アプリの起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+<http://localhost:3000> にアクセスしてください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🧪 動作確認
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### スコアリングロジックの確認
 
-## Learn More
+アプリ全体を起動せずに、スコアリングエンジン（ソンタくんの脳みそ）単体の動作を確認するスクリプトを実行できます：
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npx tsx scripts/verify-scoring.ts
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### エンドツーエンドのフロー確認
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. `/interviews/new` にアクセスします。
+2. 面談を作成します（例：「エンジニア採用面談」）。
+3. 生成された候補者用リンクをコピーします。
+4. リンクを開きます（候補者になりきって操作）。
+5. 以下のように入力します： "来週の火曜か水曜の午後なら空いてます。12時から13時はお昼休みなので避けてもらえると助かります。"
+6. 送信します。
+7. `/interviews/[id]/suggestions`（リンク発行画面にあります）にアクセスして、結果を確認します。
 
-## Deploy on Vercel
+## 📁 主要ファイル
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/lib/gemini.ts`: AIによる抽出ロジック。
+- `src/lib/sontaku-engine.ts`: スコアリングアルゴリズム（ランチタイム判定など）。
+- `src/app/i/[token]/page.tsx`: 候補者用画面。
