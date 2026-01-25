@@ -22,10 +22,6 @@ const notoSansJP = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: "Sontakun (ソンタくん) | AI日程調整",
   description: "空気を読むAI日程調整ツール。ランチタイムや前後の余裕を考慮した、思いやりのあるスケジュール提案。",
-  icons: {
-    icon: "/sontakun-icon.jpg",
-    apple: "/sontakun-icon.jpg",
-  },
 };
 
 export default function RootLayout({
