@@ -31,13 +31,13 @@ export function CreateInterviewForm() {
          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             面談タイトル
          </label>
-         <Input name="title" placeholder="例: エンジニア採用面談" required />
+         <Input name="title" placeholder="例: エンジニア採用面談" required maxLength={100} />
        </div>
        <div className="space-y-2">
          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             採用担当者名
          </label>
-         <Input name="recruiter_name" placeholder="あなたの名前" required />
+         <Input name="recruiter_name" placeholder="あなたの名前" required maxLength={50} />
        </div>
        <Button type="submit" disabled={loading} className="w-full h-12 text-lg font-bold bg-linear-to-r from-primary to-indigo-600 hover:opacity-90 transition-all">
          {loading ? "作成中..." : "共有リンクを発行"}

@@ -24,8 +24,12 @@ export async function createInterview(formData: FormData) {
     }
 
     // 候補者のためのトークンを作成
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7日間有効
+
     const { data: tokenData, error: tokenError } = await supabase.from("interview_tokens").insert({
-        interview_id: interview.id
+        interview_id: interview.id,
+        expires_at: expiresAt.toISOString()
     }).select().single();
 
     if (tokenError) {

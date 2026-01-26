@@ -12,7 +12,8 @@ create table interview_tokens (
   token uuid default gen_random_uuid() primary key,
   interview_id uuid references interviews(id) on delete cascade,
   candidate_name text,
-  is_used boolean default false
+  is_used boolean default false,
+  expires_at timestamp with time zone not null default (now() + interval '7 days')
 );
 
 -- 可用性データ（条件と結果）

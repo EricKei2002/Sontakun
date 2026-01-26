@@ -23,6 +23,7 @@ export function CandidateForm({ token }: { token: string }) {
             className="w-full min-h-[160px] p-5 rounded-2xl border border-white/10 bg-black/20 text-lg placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:outline-none resize-none transition-all shadow-inner"
             placeholder="例: 来週の火曜か水曜の午後なら空いてます。12時から13時はお昼休みなので避けてもらえると助かります。あと月曜の午前中は会議があるのでNGでお願いします。"
             required
+            maxLength={2000}
          />
        </div>
        <div className="flex justify-center sm:justify-end">

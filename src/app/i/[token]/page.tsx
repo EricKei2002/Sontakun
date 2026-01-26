@@ -14,6 +14,30 @@ export default async function CandidatePage({ params }: { params: Promise<{ toke
   
   if (!tokenData) return notFound();
 
+  // Validate Expiration
+  if (new Date(tokenData.expires_at) < new Date()) {
+    return (
+        <div className="container min-h-screen flex items-center justify-center">
+            <div className="text-center p-8 bg-black/20 rounded-xl border border-white/10">
+                <h1 className="text-2xl font-bold text-red-400 mb-2">リンクの有効期限が切れています</h1>
+                <p className="text-muted-foreground">新しいリンクを発行してもらってください。</p>
+            </div>
+        </div>
+    );
+  }
+
+  // Validate Usage
+  if (tokenData.is_used) {
+    return (
+        <div className="container min-h-screen flex items-center justify-center">
+            <div className="text-center p-8 bg-black/20 rounded-xl border border-white/10">
+                <h1 className="text-2xl font-bold text-yellow-500 mb-2">回答済みです</h1>
+                <p className="text-muted-foreground">このリンクは既に使用されています。</p>
+            </div>
+        </div>
+    );
+  }
+
   return (
      <div className="container max-w-2xl min-h-[calc(100vh-4rem)] flex flex-col justify-center py-10 px-4">
         <div className="bg-secondary/20 backdrop-blur-xl border border-white/10 p-8 md:p-12 rounded-3xl shadow-2xl relative overflow-hidden">

@@ -1,25 +1,59 @@
-"use server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js"; // Direct client for Admin
 import { geminiExtractConstraints } from "@/lib/gemini";
 import { redirect } from "next/navigation";
 
 export async function submitAvailability(token: string, formData: FormData) {
    const rawText = formData.get("availability") as string;
-   const supabase = await createClient();
+   
+   // Input Validation
+   if (!rawText || rawText.length > 2000) {
+       throw new Error("Input text is too long (max 2000 chars).");
+   }
 
-   // トークンを検証
-   const { data: tokenData, error } = await supabase.from('interview_tokens').select('interview_id').eq('token', token).single();
+   // Admin Client for Security Logic (Bypass RLS)
+   // Note: Ensure SUPABASE_SERVICE_ROLE_KEY is set in your env vars
+   const supabaseAdmin = createClient(
+     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+     process.env.SUPABASE_SERVICE_ROLE_KEY!
+   );
+
+   // トークンを検証 (有効期限と使用済みチェック)
+   const { data: tokenData, error } = await supabaseAdmin
+     .from('interview_tokens')
+     .select('interview_id, is_used, expires_at')
+     .eq('token', token)
+     .single();
    
    if (error || !tokenData) {
-     throw new Error("Invalid or expired token");
+     throw new Error("Invalid token");
+   }
+
+   if (tokenData.is_used) {
+       throw new Error("Token already used");
+   }
+
+   if (new Date(tokenData.expires_at) < new Date()) {
+       throw new Error("Token expired");
    }
 
    // 1. 抽出 (数秒かかる場合があります)
    const constraints = await geminiExtractConstraints(rawText);
    
-   // 2. 保存
-   const { error: insertError } = await supabase.from("availabilities").insert({
+   // 2. 使用済みにマーク (Atomicity note: ideal to do in transaction but separate calls fine for MVP)
+   const { error: updateError } = await supabaseAdmin
+     .from("interview_tokens")
+     .update({ is_used: true })
+     .eq("token", token);
+
+   if (updateError) {
+       console.error("Failed to mark token used", updateError);
+       throw new Error("System error: could not update token status");
+   }
+
+   // 3. 保存 (Use normal client or admin, admin is fine here)
+   const { error: insertError } = await supabaseAdmin.from("availabilities").insert({
        interview_id: tokenData.interview_id,
+       candidate_name: "Candidate", // Future: add name input
        raw_text: rawText,
        extracted_json: constraints
    });

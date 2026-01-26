@@ -14,7 +14,7 @@ export function Header() {
           />
         </div>
         <span className="text-lg font-bold bg-linear-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-          Sontakun
+          Sontaくん
         </span>
       </Link>
       
