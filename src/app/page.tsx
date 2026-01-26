@@ -41,10 +41,17 @@ export default function Home() {
           </Link>
       </div>
       
-      <div className="mt-16 p-4 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-sm animate-pulse">
-        <p className="text-xs sm:text-sm font-mono text-primary/80">
-          System Status: All Systems Operational
-        </p>
+      <div className="mt-16">
+        <Link 
+          href="https://www.burst.style/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="inline-block p-4 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-sm hover:bg-primary/10 transition-colors"
+        >
+          <p className="text-xs sm:text-sm font-mono text-primary/80">
+            Powered by Burst Style
+          </p>
+        </Link>
       </div>
     </main>
   );
