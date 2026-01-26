@@ -39,7 +39,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ toke
   }
 
   return (
-     <div className="container max-w-2xl min-h-[calc(100vh-4rem)] flex flex-col justify-center py-10 px-4">
+     <div className="container max-w-2xl min-h-[calc(100vh-4rem)] flex flex-col justify-center py-10 px-4 mx-auto">
         <div className="bg-secondary/20 backdrop-blur-xl border border-white/10 p-8 md:p-12 rounded-3xl shadow-2xl relative overflow-hidden">
             {/* Background decoration */ }
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2 pointer-events-none" />

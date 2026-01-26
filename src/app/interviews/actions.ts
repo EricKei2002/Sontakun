@@ -10,12 +10,20 @@ export async function createInterview(formData: FormData) {
     }
 
     const supabase = await createClient();
+    
+    // Check Authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+        return { error: "Authentication required. Please log in." };
+    }
+
     const title = formData.get("title") as string;
     const recruiter_name = formData.get("recruiter_name") as string;
 
     const { data: interview, error } = await supabase.from("interviews").insert({
         title,
-        recruiter_name
+        recruiter_name,
+        user_id: user.id
     }).select().single();
 
     if (error) {
@@ -26,9 +34,13 @@ export async function createInterview(formData: FormData) {
     // 候補者のためのトークンを作成
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7日間有効
+    
+    // トークンを生成 (シンプルにUUIDを使用)
+    const token = crypto.randomUUID();
 
     const { data: tokenData, error: tokenError } = await supabase.from("interview_tokens").insert({
         interview_id: interview.id,
+        token: token,
         expires_at: expiresAt.toISOString()
     }).select().single();
 
@@ -51,9 +63,13 @@ export async function createInterview(formData: FormData) {
   }
 }
 
-function isRedirectError(error: any) {
-    return error && typeof error === 'object' && (
-        error.digest?.startsWith('NEXT_REDIRECT') || 
-        error.message === 'NEXT_REDIRECT'
+function isRedirectError(error: unknown): boolean {
+    if (typeof error !== 'object' || error === null) {
+        return false;
+    }
+    const e = error as { digest?: string; message?: string };
+    return Boolean(
+        e.digest?.startsWith('NEXT_REDIRECT') || 
+        e.message === 'NEXT_REDIRECT'
     );
 }

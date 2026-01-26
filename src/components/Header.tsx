@@ -1,7 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
+import { createClient } from "@/lib/supabase/server";
+import { SignOutButton } from "./sign-out-button"; 
+import { Button } from "@/components/ui/button";
 
-export function Header() {
+export async function Header() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-background/60 backdrop-blur-md border-b border-white/10">
       <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
@@ -18,8 +24,31 @@ export function Header() {
         </span>
       </Link>
       
-      <nav className="flex gap-4">
-        {/* Future nav items can go here */}
+      <nav className="flex items-center gap-4">
+        {user ? (
+          <div className="flex items-center gap-4">
+             <span className="text-sm text-muted-foreground hidden sm:inline">
+                {user.email}
+             </span>
+             {user.user_metadata.avatar_url && (
+                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-white/20">
+                     <Image 
+                        src={user.user_metadata.avatar_url} 
+                        alt="User Avatar" 
+                        fill 
+                        className="object-cover" 
+                     />
+                </div>
+             )}
+             <SignOutButton />
+          </div>
+        ) : (
+          <div className="flex gap-4">
+             <Link href="/login">
+                <Button variant="ghost">ログイン</Button>
+             </Link>
+          </div>
+        )}
       </nav>
     </header>
   );
