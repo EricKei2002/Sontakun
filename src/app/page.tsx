@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   return (
     <main className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-6 text-center">
-      <div className="relative mb-8 w-48 h-48 sm:w-64 sm:h-64 rounded-full p-2 bg-linear-to-br from-indigo-500/20 to-purple-500/20 border border-white/10 backdrop-blur-sm animate-float">
-        <div className="w-full h-full rounded-full overflow-hidden ring-4 ring-primary/50 shadow-2xl shadow-primary/30">
+      <div className="relative mb-8 w-48 h-48 sm:w-64 sm:h-64 p-2 bg-linear-to-br from-indigo-500/20 to-purple-500/20 border border-white/10 backdrop-blur-sm animate-float">
+        <div className="w-full h-full  overflow-hidden ring-4 ring-primary/50 shadow-2xl shadow-primary/30">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/sontakun.jpg" alt="Sontakun" className="object-cover w-full h-full transform transition-transform hover:scale-110 duration-700" />
         </div>
@@ -13,7 +13,7 @@ export default function Home() {
       
       <div className="space-y-4 max-w-2xl mx-auto">
         <h1 className="text-5xl sm:text-7xl font-bold bg-linear-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent tracking-tight">
-          Sontakun
+          Sontaくん
         </h1>
         <p className="text-xl sm:text-2xl text-muted-foreground leading-relaxed font-medium">
           空気を読むAI日程調整ツール
