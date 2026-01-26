@@ -1,3 +1,5 @@
+"use server";
+
 import { createClient } from "@supabase/supabase-js"; // Direct client for Admin
 import { geminiExtractConstraints } from "@/lib/gemini";
 import { redirect } from "next/navigation";
