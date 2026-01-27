@@ -9,13 +9,40 @@ export async function CalendarEventList() {
   const token = session?.provider_token;
   let events: CalendarEvent[] = [];
 
+  // Fetch Google Calendar events if connected
   if (token) {
     try {
-        // Fetch up to 100 events for the calendar view to be meaningful
         events = await listGoogleCalendarEvents(token, new Date().toISOString(), 100, false);
     } catch {
-        // On error, just show empty calendar (or previously shown error UI, 
-        // but user requested "show UI" so consistent behavior is better)
+        // On error, just show empty calendar
+    }
+  }
+
+  // Fetch local calendar events
+  if (session?.user) {
+    const { data: localEvents } = await supabase
+      .from("local_calendar_events")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .gte("start_time", new Date().toISOString());
+
+    if (localEvents) {
+      // Convert local events to CalendarEvent format
+      const formattedLocalEvents: CalendarEvent[] = localEvents.map((event) => ({
+        id: event.id,
+        summary: event.title,
+        description: event.description || "",
+        start: { dateTime: event.start_time },
+        end: { dateTime: event.end_time },
+        htmlLink: "", // Local events don't have links
+      }));
+
+      // Merge and sort by start time
+      events = [...events, ...formattedLocalEvents].sort((a, b) => {
+        const aStart = new Date(a.start.dateTime || a.start.date || "");
+        const bStart = new Date(b.start.dateTime || b.start.date || "");
+        return aStart.getTime() - bStart.getTime();
+      });
     }
   }
 

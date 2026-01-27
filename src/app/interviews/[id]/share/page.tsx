@@ -11,7 +11,7 @@ export default async function SharePage({ params, searchParams }: { params: Prom
   const shareLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/i/${token}`;
 
   return (
-    <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center">
+    <div className="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="w-full max-w-md space-y-6 rounded-3xl border border-white/10 bg-secondary/30 backdrop-blur-md p-10 text-center shadow-xl">
              <div className="flex justify-center">
                <div className="rounded-full bg-green-500/10 p-3 ring-1 ring-green-500/30">

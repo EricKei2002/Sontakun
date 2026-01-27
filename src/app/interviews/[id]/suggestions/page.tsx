@@ -1,7 +1,12 @@
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { generateSontakuSlots, Slot } from "@/lib/sontaku-engine";
 import { format } from "date-fns";
 import { ExtractedConstraints } from "@/lib/gemini";
+import { FormattedMessageViewer } from "@/components/formatted-message-viewer";
+import { ConstraintsViewer } from "@/components/constraints-viewer";
+import { AddToCalendarButton } from "@/components/add-to-calendar-button";
 
 export default async function SuggestionsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,22 +19,47 @@ export default async function SuggestionsPage({ params }: { params: Promise<{ id
     .limit(1)
     .single();
 
+  const { data: interview } = await supabase.from('interviews')
+    .select('title')
+    .eq('id', id)
+    .single();
+
   if (!availability) {
       return (
-          <div className="container py-20 text-center min-h-screen flex flex-col items-center justify-center">
+          <div className="container mx-auto py-20 text-center min-h-screen flex flex-col items-center justify-center">
               <h1 className="text-3xl font-bold mb-2">候補者からの回答待ち</h1>
               <div className="animate-pulse bg-muted h-4 w-64 rounded mb-4"></div>
-              <p className="text-muted-foreground">まだ回答がありません。<br/>しばらくしてから再度ご確認ください。</p>
+              <p className="text-muted-foreground mb-8">まだ回答がありません。<br/>しばらくしてから再度ご確認ください。</p>
+              <Link href="/dashboard">
+                  <Button variant="outline">ダッシュボードに戻る</Button>
+              </Link>
           </div>
       );
   }
 
   // Type assertion since jsonb is explicitly defined in interface/schema but needs cast
   const constraints = availability.extracted_json as unknown as ExtractedConstraints;
-  const slots = generateSontakuSlots(constraints);
+
+  // Fetch organizer settings (lunch policy)
+  const { data: { user } } = await supabase.auth.getUser();
+  let lunchPolicyOverride: "avoid" | "allow" | "none" | undefined;
+  
+  if (user) {
+      const { data: settings } = await supabase
+        .from('user_settings')
+        .select('lunch_policy')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (settings?.lunch_policy) {
+          lunchPolicyOverride = settings.lunch_policy as "avoid" | "allow" | "none";
+      }
+  }
+
+  const slots = generateSontakuSlots(constraints, 60, [], lunchPolicyOverride);
 
   return (
-    <div className="container py-12 max-w-5xl min-h-screen">
+    <div className="container py-12 px-4 max-w-5xl mx-auto min-h-screen">
        <h1 className="text-4xl font-bold mb-8 bg-linear-to-r from-indigo-400 to-purple-600 bg-clip-text text-transparent">
            ソンタくんの提案
        </h1>
@@ -38,46 +68,76 @@ export default async function SuggestionsPage({ params }: { params: Promise<{ id
            <div className="space-y-6">
                <div className="space-y-2">
                     <h2 className="text-xl font-semibold opacity-80">候補者のメッセージ</h2>
-                    <div className="p-6 rounded-xl border bg-muted/20 backdrop-blur-sm">
-                        <p className="italic text-lg text-foreground/90 leading-relaxed">&quot;{availability.raw_text}&quot;</p>
-                    </div>
+                    <FormattedMessageViewer 
+                        rawText={availability.raw_text} 
+                        formalText={constraints.formal_message_japanese} 
+                    />
                </div>
                
                <div className="space-y-2">
-                    <h2 className="text-xl font-semibold opacity-80">AIが読み取った条件</h2>
-                    <pre className="p-4 rounded-xl border bg-black/50 text-xs text-muted-foreground overflow-auto h-64 font-mono">
-                        {JSON.stringify(constraints, null, 2)}
-                    </pre>
-               </div>
+                     <ConstraintsViewer constraints={constraints} />
+                </div>
            </div>
            
            <div className="space-y-6">
                <h2 className="text-xl font-semibold text-primary flex items-center gap-2">
-                   おすすめの日時トップ5
+                   Sontaくんが選ぶベスト５日時
                </h2>
                <div className="space-y-4">
-                   {slots.map((slot: Slot, i: number) => (
-                       <div key={i} className="flex flex-col p-5 rounded-xl border bg-card hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/5 group">
-                           <div className="flex justify-between items-center mb-3">
-                               <div className="text-xl font-bold text-foreground">
-                                   {format(slot.start, "M月d日 (EEE)")}
-                               </div>
-                               <div className="text-2xl font-mono text-primary group-hover:scale-105 transition-transform">
-                                   {format(slot.start, "HH:mm")} <span className="text-muted-foreground text-lg mx-1">-</span> {format(slot.end, "HH:mm")}
-                               </div>
-                           </div>
-                           <div className="flex gap-2 flex-wrap">
-                               <span className="bg-primary/20 text-primary px-2.5 py-1 rounded-md text-xs font-bold ring-1 ring-primary/30">
-                                   スコア: {slot.score}
-                               </span>
-                               {slot.reasons.map((r, k) => (
-                                   <span key={k} className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-xs border border-white/5">
-                                       {r}
-                                   </span>
-                               ))}
-                           </div>
+                   {slots.length === 0 ? (
+                       <div className="p-8 text-center text-muted-foreground bg-white/5 rounded-xl border border-dashed border-white/10">
+                           <p>条件に一致する日時は見つかりませんでした。<br/>候補者の条件を緩和するか、手動で調整してください。</p>
                        </div>
-                   ))}
+                   ) : (
+                       slots.map((slot: Slot, i: number) => {
+                       const rank = i + 1;
+                       const isTop = rank === 1;
+                       return (
+                           <div key={i} className={`flex flex-col p-5 rounded-xl border transition-all hover:shadow-lg hover:shadow-primary/5 group relative overflow-hidden ${isTop ? 'bg-linear-to-r from-indigo-500/10 to-purple-500/10 border-primary/50' : 'bg-card hover:border-primary/50'}`}>
+                               
+                               {/* Ranking Badge */}
+                               <div className={`absolute top-0 right-0 px-3 py-1 rounded-bl-xl text-xs font-bold flex items-center gap-1 ${
+                                   rank === 1 ? "bg-yellow-500/20 text-yellow-500 border-l border-b border-yellow-500/30" :
+                                   rank === 2 ? "bg-slate-400/20 text-slate-400 border-l border-b border-slate-400/30" :
+                                   rank === 3 ? "bg-amber-700/20 text-amber-600 border-l border-b border-amber-700/30" :
+                                   "bg-muted text-muted-foreground"
+                               }`}>
+                                   {isTop && "👑"} Rank {rank}
+                               </div>
+
+                               <div className="flex justify-between items-center mb-3 pr-16">
+                                   <div className="text-xl font-bold text-foreground flex items-center gap-3">
+                                       {format(slot.start, "M月d日 (EEE)")}
+                                   </div>
+                               </div>
+                               
+                               <div className="text-3xl font-mono text-primary group-hover:scale-105 transition-transform origin-left mb-4">
+                                   {format(slot.start, "HH:mm")} <span className="text-muted-foreground text-xl mx-1">-</span> {format(slot.end, "HH:mm")}
+                               </div>
+
+                               <div className="flex gap-2 flex-wrap">
+                                   <span className="bg-primary/20 text-primary px-2.5 py-1 rounded-md text-xs font-bold ring-1 ring-primary/30">
+                                       スコア: {slot.score}
+                                   </span>
+                                   {slot.reasons.map((r, k) => (
+                                       <span key={k} className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-xs border border-white/5">
+                                           {r}
+                                       </span>
+                                   ))}
+                                </div>
+                                
+                                <div className="mt-4">
+                                    <AddToCalendarButton 
+                                        interviewId={id}
+                                        interviewTitle={interview?.title || "面談"}
+                                        slotStart={slot.start.toISOString()}
+                                        slotEnd={slot.end.toISOString()}
+                                    />
+                                </div>
+                            </div>
+                       );
+                   })
+                   )}
                </div>
            </div>
        </div>

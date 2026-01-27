@@ -19,6 +19,7 @@ import { ja } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/lib/google-calendar";
+import { EventEditModal } from "./event-edit-modal";
 
 interface SontaCalendarViewProps {
   initialEvents: CalendarEvent[];
@@ -27,6 +28,8 @@ interface SontaCalendarViewProps {
 export function SontaCalendarView({ initialEvents }: SontaCalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [events, setEvents] = useState(initialEvents);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
@@ -42,20 +45,26 @@ export function SontaCalendarView({ initialEvents }: SontaCalendarViewProps) {
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
   const eventsOnSelectedDate = useMemo(() => {
-    return initialEvents.filter(event => {
+    return events.filter(event => {
       const startStr = event.start.dateTime || event.start.date;
       if (!startStr) return false;
       return isSameDay(parseISO(startStr), selectedDate);
     });
-  }, [initialEvents, selectedDate]);
+  }, [events, selectedDate]);
 
   // Helper to check if a day has events
   const hasEvents = (day: Date) => {
-    return initialEvents.some(event => {
+    return events.some(event => {
         const startStr = event.start.dateTime || event.start.date;
         if (!startStr) return false;
         return isSameDay(parseISO(startStr), day);
     });
+  };
+
+  const handleEventUpdate = () => {
+    // Remove the deleted event from state
+    setEvents(events.filter(e => e.id !== selectedEvent?.id));
+    setSelectedEvent(null);
   };
 
   return (
@@ -159,7 +168,7 @@ export function SontaCalendarView({ initialEvents }: SontaCalendarViewProps) {
                           const isAllDay = !event.start.dateTime;
 
                           return (
-                              <div key={event.id} className="group relative p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-default">
+                              <div key={event.id} onClick={() => setSelectedEvent(event)} className="group relative p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer">
                                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-purple-500 rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity" />
                                   <h4 className="font-bold text-sm mb-2 line-clamp-2">{event.summary || "(タイトルなし)"}</h4>
                                   <div className="space-y-1.5">
@@ -187,11 +196,19 @@ export function SontaCalendarView({ initialEvents }: SontaCalendarViewProps) {
           <div className="p-5 rounded-2xl bg-linear-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20">
               <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest mb-1 opacity-70">Total Events</p>
               <div className="flex items-end gap-2">
-                  <span className="text-3xl font-black text-white leading-none">{initialEvents.length}</span>
+                  <span className="text-3xl font-black text-white leading-none">{events.length}</span>
                   <span className="text-xs text-indigo-300 font-medium pb-0.5">Upcoming Sync</span>
               </div>
           </div>
       </div>
+
+      {selectedEvent && (
+        <EventEditModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          onUpdate={handleEventUpdate}
+        />
+      )}
     </div>
   );
 }

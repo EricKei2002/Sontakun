@@ -56,11 +56,18 @@ export default async function DashboardPage() {
     <main className="container mx-auto px-4 py-8 min-h-[calc(100vh-4rem)]">
        <div className="flex items-center justify-between mb-8">
          <h1 className="text-3xl font-bold">ダッシュボード</h1>
-         <Link href="/interviews/new">
-            <Button className="bg-primary hover:bg-primary/90 text-white font-bold">
-                + 新規作成
-            </Button>
-         </Link>
+         <div className="flex gap-4">
+             <Link href="/settings">
+                <Button variant="outline">
+                    ⚙️ Sontaくんをカスタマイズ
+                </Button>
+             </Link>
+             <Link href="/interviews/new">
+                <Button className="bg-primary hover:bg-primary/90 text-white font-bold">
+                    + 新規作成
+                </Button>
+             </Link>
+         </div>
        </div>
 
        <div className="mb-8 p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
@@ -164,6 +171,9 @@ export default async function DashboardPage() {
                     <div className="flex gap-2">
                          <Link href={`/interviews/${interview.id}/share?token=${interview.interview_tokens?.[0]?.token}`}>
                             <Button variant="outline" size="sm">リンク確認</Button>
+                         </Link>
+                         <Link href={`/interviews/${interview.id}/suggestions`}>
+                            <Button variant="default" size="sm">提案確認</Button>
                          </Link>
                     </div>
                 </div>

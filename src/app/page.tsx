@@ -1,8 +1,13 @@
 
 import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
+import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
 
   return (
@@ -31,7 +36,16 @@ export default async function Home() {
           そんな<span className="text-foreground font-bold">&quot;暗黙の希望&quot;</span>も、Sontaくんが汲み取ります。<br/>
           相手に気を使わせない、新しい日程調整体験を。
         </p>
-
+        {!user && (
+          <div className="pt-6">
+            <Link href="/login">
+              <Button size="lg" className="rounded-full px-8 py-6 text-lg font-bold bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-indigo-500/25 transition-all duration-300">
+                Sontaくんを始める
+                 <span className="ml-2">→</span>
+              </Button>
+            </Link>
+          </div>
+        )}
 
 
         <div className="mt-16 grid gap-6 sm:grid-cols-2 text-left">

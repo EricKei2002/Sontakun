@@ -1,6 +1,6 @@
 export default function ThankYouPage() {
   return (
-    <div className="container min-h-screen flex flex-col items-center justify-center text-center space-y-6">
+    <div className="container mx-auto min-h-screen flex flex-col items-center justify-center text-center space-y-6">
       <h1 className="text-4xl font-bold text-primary">承りました。</h1>
       <p className="text-xl text-muted-foreground max-w-md">
         ソンタくんがあなたのメッセージを分析し、最も思いやりのある日時を探しています。<br/>

@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function NewInterviewPage() {
   return (
-    <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
+    <div className="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
       <div className="grid w-full max-w-5xl gap-12 lg:grid-cols-2 lg:items-center mx-auto">
         
         {/* Left Side: Form */}

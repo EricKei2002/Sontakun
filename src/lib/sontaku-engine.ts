@@ -21,7 +21,8 @@ export interface Slot {
 export function generateSontakuSlots(
   constraints: ExtractedConstraints,
   interviewDurationMinutes: number = 60,
-  busySlots: { start: Date; end: Date }[] = []
+  busySlots: { start: Date; end: Date }[] = [],
+  lunchPolicyOverride?: "avoid" | "allow" | "none"
 ): Slot[] {
   const slots: Slot[] = [];
   const now = new Date();
@@ -95,7 +96,9 @@ export function generateSontakuSlots(
         { start: lunchStart, end: lunchEnd }
       );
 
-      if (constraints.lunch_break_policy === 'avoid') {
+      const effectiveLunchPolicy = lunchPolicyOverride || constraints.lunch_break_policy;
+
+      if (effectiveLunchPolicy === 'avoid') {
         if (overlapsLunch) {
             score -= 50;
             reasons.push("ランチタイムに干渉 (-50)");
@@ -103,11 +106,22 @@ export function generateSontakuSlots(
             score += 20;
             reasons.push("ランチタイムを考慮 (+20)");
         }
-      } else if (constraints.lunch_break_policy === 'preferred') {
+      } else if (effectiveLunchPolicy === 'preferred') {
          if (overlapsLunch) {
              score += 30;
              reasons.push("ランチミーティング推奨 (+30)");
          }
+      } else if (effectiveLunchPolicy === 'none') {
+          // Lunch is not protected. No penalty, maybe slight bonus for efficiency?
+          if (overlapsLunch) {
+              score += 10; 
+              reasons.push("昼食時間帯も可 (+10)");
+          }
+      } else if (effectiveLunchPolicy === 'allow') {
+          // Neutral
+          if (overlapsLunch) {
+              reasons.push("ランチタイム許容");
+          }
       }
 
       // クリーンな開始時間ボーナス

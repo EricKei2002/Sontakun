@@ -46,11 +46,7 @@ export async function Header() {
              <SignOutButton />
           </div>
         ) : (
-          <div className="flex gap-4">
-             <Link href="/login">
-                <Button variant="ghost">ログイン</Button>
-             </Link>
-          </div>
+          <></>
         )}
       </nav>
     </header>

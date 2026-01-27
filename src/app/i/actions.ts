@@ -38,8 +38,27 @@ export async function submitAvailability(token: string, formData: FormData) {
        throw new Error("Token expired");
    }
 
+   // 0. Fetch organizer settings for Persona customization
+   let customInstructions = "";
+   const { data: interview } = await supabaseAdmin
+      .from('interviews')
+      .select('user_id')
+      .eq('id', tokenData.interview_id)
+      .single();
+   
+   if (interview) {
+       const { data: settings } = await supabaseAdmin
+           .from('user_settings')
+           .select('custom_instructions')
+           .eq('user_id', interview.user_id)
+           .single();
+       if (settings?.custom_instructions) {
+           customInstructions = settings.custom_instructions;
+       }
+   }
+
    // 1. 抽出 (数秒かかる場合があります)
-   const constraints = await geminiExtractConstraints(rawText);
+   const constraints = await geminiExtractConstraints(rawText, customInstructions);
    
    // 2. 使用済みにマーク (Atomicity note: ideal to do in transaction but separate calls fine for MVP)
    const { error: updateError } = await supabaseAdmin

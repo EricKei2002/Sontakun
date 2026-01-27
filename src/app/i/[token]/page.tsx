@@ -17,7 +17,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ toke
   // Validate Expiration
   if (new Date(tokenData.expires_at) < new Date()) {
     return (
-        <div className="container min-h-screen flex items-center justify-center">
+        <div className="container mx-auto min-h-screen flex items-center justify-center">
             <div className="text-center p-8 bg-black/20 rounded-xl border border-white/10">
                 <h1 className="text-2xl font-bold text-red-400 mb-2">リンクの有効期限が切れています</h1>
                 <p className="text-muted-foreground">新しいリンクを発行してもらってください。</p>
@@ -29,7 +29,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ toke
   // Validate Usage
   if (tokenData.is_used) {
     return (
-        <div className="container min-h-screen flex items-center justify-center">
+        <div className="container mx-auto min-h-screen flex items-center justify-center">
             <div className="text-center p-8 bg-black/20 rounded-xl border border-white/10">
                 <h1 className="text-2xl font-bold text-yellow-500 mb-2">回答済みです</h1>
                 <p className="text-muted-foreground">このリンクは既に使用されています。</p>

@@ -9,9 +9,13 @@ export interface ExtractedConstraints {
   lunch_break_policy: "avoid" | "allow" | "preferred";
   buffer_time_preference: boolean;
   raw_analysis?: string; // 任意の分析理由
+  formal_message_japanese?: string; // AIによる敬語変換
 }
 
-export async function geminiExtractConstraints(text: string): Promise<ExtractedConstraints> {
+export async function geminiExtractConstraints(
+  text: string, 
+  customInstructions: string = ""
+): Promise<ExtractedConstraints> {
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash-lite",
     generationConfig: {
@@ -21,6 +25,16 @@ export async function geminiExtractConstraints(text: string): Promise<ExtractedC
 
   const prompt = `
     You are a polite scheduling assistant (Sontakun). Extract scheduling constraints from the user's input.
+    Today is ${new Date().toDateString()}.
+    
+    [IMPORTANT]
+    The organizer has provided specific instructions for your persona/behavior:
+    "${customInstructions}"
+    
+    Please reflect these instructions in the "formal_message_japanese" tone and content.
+    If the instructions ask to ignore certain days, reflect that in the extracted constraints.
+    If the instructions ask for a specific tone (e.g. "speak like a Gyaru", "use Kansai dialect"), you MUST follow it in the "formal_message_japanese" field.
+    
     Detect nuances like "lunch time" (usually 12:00-13:00), "start of the day" (09:00-10:00), etc.
     
     Return JSON format:
@@ -30,7 +44,8 @@ export async function geminiExtractConstraints(text: string): Promise<ExtractedC
       "excluded_periods": [{"description": "reason", "start": "HH:MM", "end": "HH:MM"}],
       "lunch_break_policy": "avoid" | "allow" | "preferred", // If they say "lunch is fine", allow. If "avoid lunch", avoid. Default to "avoid" if ambiguous to be polite.
       "buffer_time_preference": boolean, // If they seem busy or ask for gaps.
-      "raw_analysis": "Short summary of what you understood"
+      "raw_analysis": "Short summary of what you understood",
+      "formal_message_japanese": "Rewrite the User Input into a polite, formal business Japanese message suitable for a scheduling context. Even if the input is casual (e.g., 'next week is fine'), convert it to Keigo (e.g., '来週の平日であればいつでも調整可能です。よろしくお願いいたします。')."
     }
 
     Input Text: "${text}"
