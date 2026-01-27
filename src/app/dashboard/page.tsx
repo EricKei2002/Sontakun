@@ -7,6 +7,7 @@ import { ConfirmSlotButton } from "@/components/confirm-slot-button";
 import { Check } from "lucide-react";
 import { CalendarEventList } from "@/components/calendar-event-list";
 import { DeleteInterviewButton } from "@/components/delete-interview-button";
+import { DisconnectCalendarButton } from "@/components/disconnect-calendar-button";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -53,17 +54,20 @@ export default async function DashboardPage() {
             <p className="text-sm text-muted-foreground">Googleカレンダーと連携すると、確定した日程を自動で書き込みます。</p>
           </div>
           {isConnected ? (
-              <div className="flex items-center gap-2 text-green-400 font-bold bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
-                  <Check className="w-4 h-4" />
-                  連携済み
+              <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-green-400 font-bold bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
+                      <Check className="w-4 h-4" />
+                      連携済み
+                  </div>
+                  <DisconnectCalendarButton />
               </div>
           ) : (
-              <ConnectCalendarButton />
+              <ConnectCalendarButton userEmail={user.email} />
           )}
        </div>
        
        <div className="mb-8">
-          <CalendarEventList />
+          {isConnected && <CalendarEventList />}
        </div>
 
        <div className="grid gap-4">

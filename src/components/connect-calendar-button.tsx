@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 
-export function ConnectCalendarButton() {
+export function ConnectCalendarButton({ userEmail }: { userEmail?: string }) {
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
 
@@ -15,11 +15,12 @@ export function ConnectCalendarButton() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
           scopes: "https://www.googleapis.com/auth/calendar.events",
           queryParams: {
             access_type: "offline",
             prompt: "consent",
+            login_hint: userEmail || "",
           },
         },
       });

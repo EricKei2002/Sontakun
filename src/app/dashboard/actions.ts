@@ -74,3 +74,32 @@ export async function deleteInterview(interviewId: string) {
   revalidatePath("/dashboard");
   return { success: true };
 }
+
+export async function disconnectCalendar() {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session?.provider_token) {
+    return { success: false, error: "No token found" };
+  }
+
+  try {
+     const token = session.provider_token;
+     // Revoke the token
+     await fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, {
+         method: 'POST',
+         headers: {
+             'Content-Type': 'application/x-www-form-urlencoded'
+         }
+     });
+     
+     // Note: We cannot easily remove the provider_token from the session server-side 
+     // without signing out, but revoking it will make verifications fail (isConnected = false).
+     
+     revalidatePath("/dashboard");
+     return { success: true };
+  } catch (error) {
+     console.error("Failed to disconnect calendar:", error);
+     return { success: false, error: "Failed to disconnect" };
+  }
+}
