@@ -39,7 +39,7 @@ export async function listGoogleCalendarEvents(accessToken: string, timeMin?: st
      try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.error?.message || errorMessage;
-     } catch (e) {
+     } catch {
         // Response was not JSON
         errorMessage = errorText;
      }

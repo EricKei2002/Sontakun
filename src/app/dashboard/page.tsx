@@ -9,6 +9,21 @@ import { CalendarEventList } from "@/components/calendar-event-list";
 import { DeleteInterviewButton } from "@/components/delete-interview-button";
 import { DisconnectCalendarButton } from "@/components/disconnect-calendar-button";
 
+interface CandidateSlot {
+  start: string;
+  end: string;
+}
+
+interface Availability {
+  id: string;
+  candidate_name?: string;
+  raw_text: string;
+  final_selected_slot?: string;
+  extracted_json?: {
+    candidate_slots?: CandidateSlot[];
+  };
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
@@ -26,7 +41,7 @@ export default async function DashboardPage() {
           const { listGoogleCalendarEvents } = await import("@/lib/google-calendar");
           await listGoogleCalendarEvents(session.provider_token, new Date().toISOString(), 1, false);
           isConnected = true;
-      } catch (e) {
+      } catch {
           isConnected = false;
       }
   }
@@ -67,7 +82,7 @@ export default async function DashboardPage() {
        </div>
        
        <div className="mb-8">
-          {isConnected && <CalendarEventList />}
+          <CalendarEventList />
        </div>
 
        <div className="grid gap-4">
@@ -102,7 +117,7 @@ export default async function DashboardPage() {
 
                     {/* Candidate Responses */}
                     <div className="mb-4 space-y-3">
-                        {interview.availabilities?.map((av: any) => (
+                        {interview.availabilities?.map((av: Availability) => (
                             <div key={av.id} className="bg-black/20 p-4 rounded-lg border border-white/5">
                                 <p className="text-sm font-semibold mb-2 text-indigo-300">
                                     候補者からの回答: <span className="text-white">{av.candidate_name || "名無し"}</span>
@@ -120,7 +135,7 @@ export default async function DashboardPage() {
                                     <div className="space-y-2">
                                         <p className="text-xs text-gray-400">AI提案日時 (クリックで確定):</p>
                                         <div className="grid gap-2 sm:grid-cols-2">
-                                            {av.extracted_json?.candidate_slots?.map((slot: any, i: number) => (
+                                            {av.extracted_json?.candidate_slots?.map((slot: CandidateSlot, i: number) => (
                                                 <div key={i} className="flex items-center justify-between bg-white/5 p-2 rounded border border-white/10">
                                                     <span className="text-sm font-mono">
                                                         {new Date(slot.start).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
