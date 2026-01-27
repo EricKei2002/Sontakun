@@ -8,7 +8,7 @@ export function Footer() {
           <p className="text-center leading-loose md:text-left">
             Built by{" "}
             <a
-              href="https://twitter.com/EricKei_2002"
+              href="https://www.burst.style"
               target="_blank"
               rel="noreferrer"
               className="font-medium underline underline-offset-4"
