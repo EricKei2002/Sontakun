@@ -17,7 +17,18 @@ export default async function DashboardPage() {
   }
 
   const user = session.user;
-  const isConnected = !!session.provider_token;
+  let isConnected = false;
+  
+  if (session.provider_token) {
+      try {
+          // Verify access by making a lightweight call
+          const { listGoogleCalendarEvents } = await import("@/lib/google-calendar");
+          await listGoogleCalendarEvents(session.provider_token, new Date().toISOString(), 1);
+          isConnected = true;
+      } catch (e) {
+          isConnected = false;
+      }
+  }
 
   const { data: interviews } = await supabase
     .from("interviews")
