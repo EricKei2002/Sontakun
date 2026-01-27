@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+
 import Image from "next/image";
 
 
@@ -33,15 +32,7 @@ export default async function Home() {
           相手に気を使わせない、新しい日程調整体験を。
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-          <Link href="/interviews/new">
-            <Button size="lg" className="h-14 px-8 text-lg font-bold rounded-full shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all bg-linear-to-r from-primary to-indigo-600 border border-white/10">
-              ✨ 新しい面談を作成する
-            </Button>
-          </Link>
 
-
-        </div>
 
         <div className="mt-16 grid gap-6 sm:grid-cols-2 text-left">
            <div className="p-6 rounded-2xl bg-secondary/30 backdrop-blur-md border border-white/5 hover:bg-secondary/50 transition-colors">
