@@ -29,9 +29,19 @@ export async function listGoogleCalendarEvents(accessToken: string, timeMin?: st
 
   if (!response.ok) {
      // If 401, token might be expired. We can handle this upstream or just return empty/error.
-     const errorData = await response.json();
-     console.error("Google Calendar List Error:", errorData);
-     throw new Error(`Failed to list events: ${errorData.error?.message || "Unknown error"}`);
+     const errorText = await response.text();
+     console.error(`Google Calendar List Error: ${response.status} ${response.statusText}`, errorText);
+     
+     let errorMessage = "Unknown error";
+     try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error?.message || errorMessage;
+     } catch (e) {
+        // Response was not JSON
+        errorMessage = errorText;
+     }
+
+     throw new Error(`Failed to list events: ${errorMessage}`);
   }
 
   const data = await response.json();

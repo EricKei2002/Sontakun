@@ -27,6 +27,9 @@ export async function Header() {
       <nav className="flex items-center gap-4">
         {user ? (
           <div className="flex items-center gap-4">
+             <Link href="/dashboard">
+                <Button variant="ghost" className="text-foreground">予定を確認</Button>
+             </Link>
              <span className="text-sm text-muted-foreground hidden sm:inline">
                 {user.email}
              </span>

@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+
 
 export default async function Home() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+
 
   return (
     <main className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-8 text-center relative overflow-hidden">
@@ -41,13 +40,7 @@ export default async function Home() {
             </Button>
           </Link>
 
-          {user && (
-            <Link href="/dashboard">
-              <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-bold rounded-full border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-all">
-                📊 ダッシュボードを見る
-              </Button>
-            </Link>
-          )}
+
         </div>
 
         <div className="mt-16 grid gap-6 sm:grid-cols-2 text-left">
