@@ -35,6 +35,8 @@ export async function CalendarEventList() {
         start: { dateTime: event.start_time },
         end: { dateTime: event.end_time },
         htmlLink: "", // Local events don't have links
+        meeting_url: event.meeting_url || "",
+        notes: event.notes || "",
       }));
 
       // Merge and sort by start time

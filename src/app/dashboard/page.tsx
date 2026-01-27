@@ -21,6 +21,7 @@ interface Availability {
   final_selected_slot?: string;
   extracted_json?: {
     candidate_slots?: CandidateSlot[];
+    formal_message_japanese?: string;
   };
 }
 
@@ -126,11 +127,8 @@ export default async function DashboardPage() {
                     <div className="mb-4 space-y-3">
                         {interview.availabilities?.map((av: Availability) => (
                             <div key={av.id} className="bg-black/20 p-4 rounded-lg border border-white/5">
-                                <p className="text-sm font-semibold mb-2 text-indigo-300">
-                                    候補者からの回答: <span className="text-white">{av.candidate_name || "名無し"}</span>
-                                </p>
                                 <div className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap bg-white/5 p-2 rounded">
-                                    {av.raw_text}
+                                    {av.extracted_json?.formal_message_japanese || av.raw_text}
                                 </div>
                                 
                                 {av.final_selected_slot ? (
@@ -139,8 +137,6 @@ export default async function DashboardPage() {
                                         確定日時: {new Date(av.final_selected_slot).toLocaleString('ja-JP')}
                                     </div>
                                 ) : (
-                                    <div className="space-y-2">
-                                        <p className="text-xs text-gray-400">AI提案日時 (クリックで確定):</p>
                                         <div className="grid gap-2 sm:grid-cols-2">
                                             {av.extracted_json?.candidate_slots?.map((slot: CandidateSlot, i: number) => (
                                                 <div key={i} className="flex items-center justify-between bg-white/5 p-2 rounded border border-white/10">
@@ -159,7 +155,6 @@ export default async function DashboardPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    </div>
                                 )}
                             </div>
                         ))}

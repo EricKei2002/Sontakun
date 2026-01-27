@@ -61,9 +61,14 @@ export function SontaCalendarView({ initialEvents }: SontaCalendarViewProps) {
     });
   };
 
-  const handleEventUpdate = () => {
-    // Remove the deleted event from state
-    setEvents(events.filter(e => e.id !== selectedEvent?.id));
+  const handleEventUpdate = (updatedEvent?: CalendarEvent) => {
+    if (updatedEvent) {
+      // Update the event in state
+      setEvents(events.map(e => e.id === updatedEvent.id ? updatedEvent : e));
+    } else {
+      // Remove the deleted event from state
+      setEvents(events.filter(e => e.id !== selectedEvent?.id));
+    }
     setSelectedEvent(null);
   };
 

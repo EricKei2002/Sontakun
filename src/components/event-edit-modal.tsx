@@ -6,26 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Save, Trash2, Loader2 } from "lucide-react";
 import { updateLocalCalendarEvent, deleteLocalCalendarEvent } from "@/app/actions/local-calendar";
+import type { CalendarEvent } from "@/lib/google-calendar";
 
 interface EventEditModalProps {
-  event: {
-    id?: string;
-    summary: string;
-    description?: string;
-    start: { dateTime?: string; date?: string };
-    end: { dateTime?: string; date?: string };
-    htmlLink?: string;
-  };
+  event: CalendarEvent;
   onClose: () => void;
-  onUpdate: () => void;
+  onUpdate: (updatedEvent?: CalendarEvent) => void;
 }
 
 export function EventEditModal({ event, onClose, onUpdate }: EventEditModalProps) {
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState(event.summary);
   const [description, setDescription] = useState(event.description || "");
-  const [meetingUrl, setMeetingUrl] = useState("");
-  const [notes, setNotes] = useState("");
+  const [meetingUrl, setMeetingUrl] = useState(event.meeting_url || "");
+  const [notes, setNotes] = useState(event.notes || "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Check if this is a local event (has no htmlLink)
@@ -54,7 +48,17 @@ export function EventEditModal({ event, onClose, onUpdate }: EventEditModalProps
     );
 
     if (result.success) {
-      onUpdate();
+      const updatedEvent: CalendarEvent = {
+        id: event.id,
+        summary: title,
+        description,
+        start: event.start,
+        end: event.end,
+        htmlLink: event.htmlLink,
+        meeting_url: meetingUrl,
+        notes,
+      };
+      onUpdate(updatedEvent);
       onClose();
     } else {
       alert(result.error || "更新に失敗しました");
@@ -77,7 +81,7 @@ export function EventEditModal({ event, onClose, onUpdate }: EventEditModalProps
     const result = await deleteLocalCalendarEvent(event.id);
 
     if (result.success) {
-      onUpdate();
+      onUpdate(undefined);
       onClose();
     } else {
       alert(result.error || "削除に失敗しました");
@@ -181,7 +185,7 @@ export function EventEditModal({ event, onClose, onUpdate }: EventEditModalProps
                 ) : (
                   <Save className="w-4 h-4 mr-2" />
                 )}
-                保存
+                変更
               </Button>
             </div>
           )}

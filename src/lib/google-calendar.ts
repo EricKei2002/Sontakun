@@ -7,6 +7,8 @@ export interface CalendarEvent {
   attendees?: { email: string }[];
   htmlLink?: string;
   location?: string;
+  meeting_url?: string;
+  notes?: string;
 }
 
 export async function listGoogleCalendarEvents(accessToken: string, timeMin?: string, maxResults: number = 10, logError: boolean = true) {
