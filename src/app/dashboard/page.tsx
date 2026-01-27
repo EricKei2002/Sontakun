@@ -21,9 +21,9 @@ export default async function DashboardPage() {
   
   if (session.provider_token) {
       try {
-          // Verify access by making a lightweight call
+          // Verify access by making a lightweight call, suppress logs on failure
           const { listGoogleCalendarEvents } = await import("@/lib/google-calendar");
-          await listGoogleCalendarEvents(session.provider_token, new Date().toISOString(), 1);
+          await listGoogleCalendarEvents(session.provider_token, new Date().toISOString(), 1, false);
           isConnected = true;
       } catch (e) {
           isConnected = false;

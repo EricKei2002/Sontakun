@@ -9,7 +9,7 @@ export interface CalendarEvent {
   location?: string;
 }
 
-export async function listGoogleCalendarEvents(accessToken: string, timeMin?: string, maxResults: number = 10) {
+export async function listGoogleCalendarEvents(accessToken: string, timeMin?: string, maxResults: number = 10, logError: boolean = true) {
   const params = new URLSearchParams({
       calendarId: 'primary',
       timeMin: timeMin || new Date().toISOString(),
@@ -30,7 +30,10 @@ export async function listGoogleCalendarEvents(accessToken: string, timeMin?: st
   if (!response.ok) {
      // If 401, token might be expired. We can handle this upstream or just return empty/error.
      const errorText = await response.text();
-     console.error(`Google Calendar List Error: ${response.status} ${response.statusText}`, errorText);
+     
+     if (logError) {
+        console.error(`Google Calendar List Error: ${response.status} ${response.statusText}`, errorText);
+     }
      
      let errorMessage = "Unknown error";
      try {
