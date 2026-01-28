@@ -12,7 +12,6 @@ interface AddToCalendarButtonProps {
 }
 
 export function AddToCalendarButton({ 
-  interviewId, 
   interviewTitle, 
   slotStart, 
   slotEnd 

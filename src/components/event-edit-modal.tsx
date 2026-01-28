@@ -194,7 +194,7 @@ export function EventEditModal({ event, onClose, onUpdate }: EventEditModalProps
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60]">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-60">
           <div className="bg-secondary/95 backdrop-blur-xl border border-red-500/20 rounded-2xl max-w-sm w-full p-6 shadow-2xl mx-4">
             <h3 className="text-xl font-bold mb-3 text-red-400">本当に削除しますか？</h3>
             <p className="text-sm text-muted-foreground mb-6">
