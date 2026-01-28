@@ -6,10 +6,15 @@ import { redirect } from "next/navigation";
 
 export async function submitAvailability(token: string, formData: FormData) {
    const rawText = formData.get("availability") as string;
+   const candidateEmail = formData.get("email") as string;
    
    // Input Validation
    if (!rawText || rawText.length > 2000) {
        throw new Error("Input text is too long (max 2000 chars).");
+   }
+
+   if (!candidateEmail || !candidateEmail.includes("@")) {
+       throw new Error("Valid email address is required.");
    }
 
    // Admin Client for Security Logic (Bypass RLS)
@@ -75,6 +80,7 @@ export async function submitAvailability(token: string, formData: FormData) {
    const { error: insertError } = await supabaseAdmin.from("availabilities").insert({
        interview_id: tokenData.interview_id,
        candidate_name: "Candidate", // Future: add name input
+       candidate_email: candidateEmail,
        raw_text: rawText,
        extracted_json: constraints
    });

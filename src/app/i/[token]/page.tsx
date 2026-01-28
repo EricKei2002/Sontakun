@@ -58,6 +58,8 @@ export default async function CandidatePage({ params }: { params: Promise<{ toke
           availabilityId={pendingAvailability.id}
           pendingSlot={pendingAvailability.pending_slot as PendingSlot}
           interviewTitle={tokenData.interviews.title}
+          meetingUrl={pendingAvailability.meeting_url}
+          meetingProvider={pendingAvailability.meeting_provider}
         />
       </div>
     );

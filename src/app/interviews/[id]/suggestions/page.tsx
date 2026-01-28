@@ -142,6 +142,7 @@ export default async function SuggestionsPage({ params }: { params: Promise<{ id
                                                 availabilityId={availability.id}
                                                 slotStart={slot.start.toISOString()}
                                                 slotEnd={slot.end.toISOString()}
+                                                candidateEmail={availability.candidate_email}
                                             />
                                         </div>
                                     </div>

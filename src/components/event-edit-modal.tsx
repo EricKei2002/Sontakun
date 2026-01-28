@@ -18,7 +18,7 @@ export function EventEditModal({ event, onClose, onUpdate }: EventEditModalProps
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState(event.summary);
   const [description, setDescription] = useState(event.description || "");
-  const [meetingUrl, setMeetingUrl] = useState(event.meeting_url || "");
+  const meetingUrl = event.meeting_url || "";
   const [notes, setNotes] = useState(event.notes || "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -132,17 +132,21 @@ export function EventEditModal({ event, onClose, onUpdate }: EventEditModalProps
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">ミーティングURL</label>
-            <Input
-              type="url"
-              value={meetingUrl}
-              onChange={(e) => setMeetingUrl(e.target.value)}
-              placeholder="https://meet.google.com/..."
-              disabled={!isLocalEvent || loading}
-              className="bg-black/20"
-            />
-          </div>
+          {meetingUrl && (
+            <div>
+              <a
+                href={meetingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-md text-primary font-medium transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                {meetingUrl.includes('zoom.us') ? 'Zoom' : 'Google Meet'} に参加
+              </a>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium mb-2">メモ</label>

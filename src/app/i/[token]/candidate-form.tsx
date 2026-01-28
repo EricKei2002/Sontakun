@@ -18,7 +18,28 @@ export function CandidateForm({ token }: { token: string }) {
   return (
     <form action={handleSubmit} className="space-y-6 relative z-10">
        <div className="space-y-2">
+         <label htmlFor="email" className="block text-sm font-medium text-foreground">
+           メールアドレス
+         </label>
+         <input
+           type="email"
+           id="email"
+           name="email"
+           className="w-full p-4 rounded-xl border border-white/10 bg-black/20 text-base placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:outline-none transition-all shadow-inner"
+           placeholder="your.email@example.com"
+           required
+         />
+         <p className="text-xs text-muted-foreground">
+           確定通知を受け取るために必要です
+         </p>
+       </div>
+       
+       <div className="space-y-2">
+         <label htmlFor="availability" className="block text-sm font-medium text-foreground">
+           ご都合の良い日時
+         </label>
          <textarea 
+            id="availability"
             name="availability"
             className="w-full min-h-[160px] p-5 rounded-2xl border border-white/10 bg-black/20 text-lg placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:outline-none resize-none transition-all shadow-inner"
             placeholder="例: 来週の火曜か水曜の午後なら空いてます。12時から13時はお昼休みなので避けてもらえると助かります。あと月曜の午前中は会議があるのでNGでお願いします。"

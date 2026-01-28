@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { respondToConfirmation } from "@/app/actions/confirmation";
-import { Check, X, Loader2, Calendar } from "lucide-react";
+import { Check, X, Loader2, Calendar, Video, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 
@@ -15,14 +15,19 @@ interface PendingConfirmationCardProps {
         end: string;
     };
     interviewTitle: string;
+    meetingUrl?: string | null;
+    meetingProvider?: 'google_meet' | 'zoom' | null;
 }
 
 export function PendingConfirmationCard({ 
     token, 
     availabilityId, 
     pendingSlot, 
-    interviewTitle 
+    interviewTitle,
+    meetingUrl,
+    meetingProvider = 'google_meet',
 }: PendingConfirmationCardProps) {
+    const providerLabel = meetingProvider === 'zoom' ? 'Zoom' : 'Google Meet';
     const [loading, setLoading] = useState(false);
     const [responded, setResponded] = useState(false);
     const [accepted, setAccepted] = useState<boolean | null>(null);
@@ -35,14 +40,20 @@ export function PendingConfirmationCard({
         try {
             const result = await respondToConfirmation(token, availabilityId, accept);
             if (result.success) {
-                setResponded(true);
-                setAccepted(accept);
+                if (accept) {
+                    // 承諾の場合は thank-you ページにリダイレクト
+                    window.location.href = `/i/${token}/thank-you`;
+                } else {
+                    // 拒否の場合はローカル状態を更新
+                    setResponded(true);
+                    setAccepted(accept);
+                }
             } else {
                 alert(result.error || "エラーが発生しました");
             }
         } catch (error) {
             console.error(error);
-            alert("エラーが発生しました");
+            alert("エラーが発生しました: " + (error as Error).message);
         } finally {
             setLoading(false);
         }
@@ -52,7 +63,7 @@ export function PendingConfirmationCard({
         return (
             <div className="bg-black/20 backdrop-blur-xl border border-white/10 p-6 rounded-2xl text-center">
                 {accepted ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
                             <Check className="w-8 h-8 text-green-400" />
                         </div>
@@ -62,6 +73,18 @@ export function PendingConfirmationCard({
                             <br />
                             {format(startDate, "HH:mm")} - {format(endDate, "HH:mm")}
                         </p>
+                        {meetingUrl && (
+                            <a
+                                href={meetingUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary px-4 py-3 rounded-xl mt-4 transition-colors"
+                            >
+                                <Video className="w-5 h-5" />
+                                <span className="font-semibold">{providerLabel} に参加</span>
+                                <ExternalLink className="w-4 h-4" />
+                            </a>
+                        )}
                     </div>
                 ) : (
                     <div className="space-y-3">
@@ -96,6 +119,12 @@ export function PendingConfirmationCard({
                 <p className="text-4xl font-mono text-white">
                     {format(startDate, "HH:mm")} - {format(endDate, "HH:mm")}
                 </p>
+                {meetingUrl && (
+                    <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                        <Video className="w-4 h-4 text-green-400" />
+                        <span>{providerLabel} で開催</span>
+                    </div>
+                )}
             </div>
 
             <div className="flex gap-3">
