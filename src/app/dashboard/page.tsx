@@ -114,9 +114,13 @@ export default async function DashboardPage() {
                         <span className={`px-2 py-1 rounded text-xs font-mono border ${
                             interview.status === 'active' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 
                             interview.status === 'confirmed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                            interview.status === 'pending_confirmation' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
                             'bg-gray-500/10 text-gray-400 border-gray-500/20'
                         }`}>
-                            {interview.status === 'active' ? '調整中' : interview.status === 'confirmed' ? '確定済み' : interview.status}
+                            {interview.status === 'active' ? '調整中' : 
+                             interview.status === 'confirmed' ? '確定済み' : 
+                             interview.status === 'pending_confirmation' ? '確認待ち' : 
+                             interview.status}
                         </span>
                         <div className="ml-4">
                             <DeleteInterviewButton interviewId={interview.id} />

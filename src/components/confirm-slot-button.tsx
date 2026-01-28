@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { confirmInterview } from "@/app/dashboard/actions";
-import { Check } from "lucide-react";
+import { requestConfirmation } from "@/app/actions/confirmation";
+import { Send, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface ConfirmSlotButtonProps {
@@ -17,17 +17,19 @@ export function ConfirmSlotButton({ interviewId, availabilityId, slotStart, slot
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    async function handleConfirm() {
-        if (!confirm("Googleカレンダーにこの予定を作成してもよろしいですか？")) return;
-        
+    async function handleRequestConfirmation() {
         setLoading(true);
         try {
-            await confirmInterview(interviewId, availabilityId, slotStart, slotEnd);
-            alert("予定を確定しました！");
-            router.refresh();
+            const result = await requestConfirmation(interviewId, availabilityId, slotStart, slotEnd);
+            if (result.success) {
+                alert("候補者に確認依頼を送信しました！");
+                router.refresh();
+            } else {
+                alert(result.error || "エラーが発生しました");
+            }
         } catch (error) {
             console.error(error);
-            alert("エラーが発生しました。Googleカレンダー連携が切れている可能性があります。「連携する」ボタンから再連携してください。");
+            alert("エラーが発生しました");
         } finally {
             setLoading(false);
         }
@@ -36,16 +38,21 @@ export function ConfirmSlotButton({ interviewId, availabilityId, slotStart, slot
     return (
         <Button 
             size="sm" 
-            onClick={handleConfirm} 
+            onClick={handleRequestConfirmation} 
             disabled={loading}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-green-600 hover:bg-green-700 text-white w-full"
         >
             {loading ? (
-                <span className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin mr-2" />
+                <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    送信中...
+                </>
             ) : (
-                <Check className="w-4 h-4 mr-1" />
+                <>
+                    <Send className="w-4 h-4 mr-2" />
+                    確認依頼
+                </>
             )}
-            確定
         </Button>
     );
 }
