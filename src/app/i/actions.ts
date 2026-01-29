@@ -87,5 +87,26 @@ export async function submitAvailability(token: string, formData: FormData) {
 
    if (insertError) throw insertError;
 
+   // 4. 面接官に通知を送信
+   const { data: interviewDetails } = await supabaseAdmin
+       .from('interviews')
+       .select('user_id, title, recruiter_name')
+       .eq('id', tokenData.interview_id)
+       .single();
+
+   if (interviewDetails) {
+       await supabaseAdmin.from("notifications").insert({
+           user_id: interviewDetails.user_id,
+           type: "availability_submitted",
+           title: "📅 候補者から回答がありました",
+           body: `「${interviewDetails.title}」の面談について、候補者から日程の回答が届きました。`,
+           link: `/interviews/${tokenData.interview_id}/suggestions`,
+           metadata: { 
+               interview_id: tokenData.interview_id,
+               candidate_email: candidateEmail
+           }
+       });
+   }
+
    redirect(`/i/${token}/thank-you`);
 }

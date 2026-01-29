@@ -17,7 +17,7 @@ export async function geminiExtractConstraints(
   customInstructions: string = ""
 ): Promise<ExtractedConstraints> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash-lite",
+    model: "gemini-flash-latest",
     generationConfig: {
       responseMimeType: "application/json",
     }
@@ -52,11 +52,25 @@ export async function geminiExtractConstraints(
   `;
 
   try {
+    console.log("[Gemini] Calling API with text:", text.substring(0, 100));
     const result = await model.generateContent(prompt);
-    return JSON.parse(result.response.text());
+    const responseText = result.response.text();
+    console.log("[Gemini] Response:", responseText.substring(0, 200));
+    return JSON.parse(responseText);
   } catch (error) {
-    console.error("Gemini Extraction Error:", error);
-    // フォールバックまたは再スロー
-    throw new Error("Failed to extract constraints.");
+    console.error("[Gemini] Extraction Error:", error);
+    console.error("[Gemini] Error details:", JSON.stringify(error, null, 2));
+    
+    // フォールバック: 最小限の制約を返す
+    console.log("[Gemini] Using fallback constraints");
+    return {
+      preferred_days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      time_ranges: [{ start: "10:00", end: "18:00" }],
+      excluded_periods: [],
+      lunch_break_policy: "avoid",
+      buffer_time_preference: true,
+      raw_analysis: "Error occurred, using default constraints",
+      formal_message_japanese: text
+    };
   }
 }

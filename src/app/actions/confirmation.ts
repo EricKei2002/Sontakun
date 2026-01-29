@@ -129,6 +129,29 @@ export async function requestConfirmation(
     });
   }
 
+  // 候補者がSontakunユーザーの場合、アプリ内通知を追加
+  if (candidateEmail) {
+    const supabaseAdmin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const candidateUser = existingUsers?.users?.find(u => u.email === candidateEmail);
+    
+    if (candidateUser) {
+      const startDate = new Date(slotStart);
+      const proposedTimeStr = format(startDate, "M月d日 (EEEE) HH:mm", { locale: ja });
+      await supabaseAdmin.from("notifications").insert({
+        user_id: candidateUser.id,
+        type: "confirmation_request",
+        title: "📩 日程の確認依頼が届きました",
+        body: `「${interview.title}」について ${proposedTimeStr} が提案されています。`,
+        link: confirmUrl,
+        metadata: { interview_id: interviewId, slot: slotStart }
+      });
+    }
+  }
+
   revalidatePath("/dashboard");
   revalidatePath(`/interviews/${interviewId}/suggestions`);
   
@@ -239,6 +262,16 @@ export async function respondToConfirmation(
       .from("interviews")
       .update({ status: "confirmed" })
       .eq("id", tokenData.interviews.id);
+
+    // 面接官に通知を送信（承諾の場合）
+    await supabase.from("notifications").insert({
+      user_id: tokenData.interviews.user_id,
+      type: "confirmation_accepted",
+      title: "✅ 候補者が日程を承諾しました！",
+      body: `「${tokenData.interviews.title}」の面談日程が確定しました。`,
+      link: `/dashboard`,
+      metadata: { interview_id: tokenData.interviews.id }
+    });
 
     // 確定メール送信（候補者メールアドレスがある場合）
     if (availability.candidate_email && availability.meeting_url) {

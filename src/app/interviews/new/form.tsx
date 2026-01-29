@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { createInterview } from "../actions";
 
 export function CreateInterviewForm() {
@@ -20,47 +19,81 @@ export function CreateInterviewForm() {
         }
       } catch (e) {
         console.error(e);
-        setError("予期せぬエラーが発生しました: " + (e instanceof Error ? e.message : String(e)));
+        setError("予期せぬエラーが発生しました");
         setLoading(false);
       }
   }
 
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <form action={handleSubmit} className="space-y-5">
+       {/* 面談タイトル */}
        <div className="space-y-2">
-         <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+         <label className="text-sm font-medium text-foreground flex items-center gap-2">
+            <span className="w-5 h-5 flex items-center justify-center rounded bg-primary/20 text-xs">📋</span>
             面談タイトル
          </label>
-         <Input name="title" placeholder="例: エンジニア採用面談" required maxLength={100} />
+         <input 
+           name="title" 
+           placeholder="例: エンジニア採用面談" 
+           required 
+           maxLength={100}
+           className="w-full h-12 px-4 rounded-xl bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+         />
        </div>
+
+       {/* あなたの名前 */}
        <div className="space-y-2">
-         <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+         <label className="text-sm font-medium text-foreground flex items-center gap-2">
+            <span className="w-5 h-5 flex items-center justify-center rounded bg-primary/20 text-xs">👤</span>
             あなたの名前
          </label>
-         <Input name="recruiter_name" placeholder="山田 太郎" required maxLength={50} />
+         <input 
+           name="recruiter_name" 
+           placeholder="山田 太郎" 
+           required 
+           maxLength={50}
+           className="w-full h-12 px-4 rounded-xl bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+         />
        </div>
+
+       {/* 候補者のメールアドレス */}
        <div className="space-y-2">
-         <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+         <label className="text-sm font-medium text-foreground flex items-center gap-2">
+            <span className="w-5 h-5 flex items-center justify-center rounded bg-primary/20 text-xs">✉️</span>
             候補者のメールアドレス
          </label>
-         <Input 
+         <input 
            name="candidate_email" 
            type="email"
            placeholder="candidate@example.com" 
            required 
-           maxLength={100} 
+           maxLength={100}
+           className="w-full h-12 px-4 rounded-xl bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
          />
-         <p className="text-xs text-muted-foreground">
-           候補者に日程調整の招待が送信されます
-         </p>
        </div>
-       <Button type="submit" disabled={loading} className="w-full h-12 text-lg font-bold bg-linear-to-r from-primary to-indigo-600 hover:opacity-90 transition-all">
-         {loading ? "送信中..." : "招待を送信"}
+
+       {/* 送信ボタン */}
+       <Button 
+         type="submit" 
+         disabled={loading} 
+         className="w-full h-14 text-lg font-bold rounded-xl bg-linear-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+       >
+         {loading ? (
+           <span className="flex items-center gap-2">
+             <span className="animate-spin">🌀</span>
+             送信中...
+           </span>
+         ) : (
+           <span className="flex items-center gap-2">
+             🚀 招待を送信
+           </span>
+         )}
        </Button>
        
        {error && (
-         <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <p className="text-sm text-red-400 text-center font-bold">
+         <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl animate-shake">
+            <p className="text-sm text-red-400 text-center font-medium flex items-center justify-center gap-2">
+                <span>⚠️</span>
                 {error}
             </p>
          </div>

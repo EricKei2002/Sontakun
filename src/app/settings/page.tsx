@@ -6,7 +6,8 @@ import { Textarea } from "../../components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Coffee, Mic } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Save, Coffee, Mic, RotateCcw } from "lucide-react";
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
@@ -81,99 +82,123 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container max-w-2xl mx-auto py-12 min-h-screen">
-      <Link href="/dashboard" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-8">
-        <ArrowLeft className="w-4 h-4 mr-2" /> ダッシュボードに戻る
-      </Link>
+    <div className="min-h-[calc(100vh-4rem)] py-8 px-4 relative overflow-hidden">
+      {/* 背景装飾 */}
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
 
-      <h1 className="text-3xl font-bold mb-2">Sontaくんカスタマイズ</h1>
-      <p className="text-muted-foreground mb-10">
-        あなたの働き方に合わせて、Sontaくんの提案ロジックを調整します。
-      </p>
+      <div className="relative z-10 max-w-2xl mx-auto">
+        {/* 戻るボタン */}
+        <Link href="/dashboard" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6 transition-colors">
+          <ArrowLeft className="w-4 h-4 mr-2" /> ダッシュボードに戻る
+        </Link>
 
-      <div className="space-y-8">
-        {/* Lunch Policy */}
-        <section className="space-y-4 p-6 rounded-2xl bg-secondary/20 border border-white/5">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-                <Coffee className="w-5 h-5 text-amber-500" />
-                お昼休みのルール
-            </h2>
-            <div className="space-y-3">
-                <label className="flex items-center gap-3 p-3 rounded-lg border border-transparent hover:bg-white/5 cursor-pointer transition-colors">
-                    <input 
-                        type="radio" 
-                        name="lunch" 
-                        value="avoid" 
-                        checked={lunchPolicy === "avoid"} 
-                        onChange={() => setLunchPolicy("avoid")}
-                        className="w-4 h-4 accent-primary" 
-                    />
-                    <div>
-                        <div className="font-bold">しっかり休む (デフォルト)</div>
-                        <div className="text-sm text-muted-foreground">12:00〜13:00 は予定を入れないようにします。</div>
-                    </div>
-                </label>
-                <label className="flex items-center gap-3 p-3 rounded-lg border border-transparent hover:bg-white/5 cursor-pointer transition-colors">
-                    <input 
-                        type="radio" 
-                        name="lunch" 
-                        value="allow" 
-                        checked={lunchPolicy === "allow"} 
-                        onChange={() => setLunchPolicy("allow")}
-                        className="w-4 h-4 accent-primary" 
-                    />
-                    <div>
-                        <div className="font-bold">柔軟に調整する</div>
-                        <div className="text-sm text-muted-foreground">必要であれば12時台も候補に入れます。</div>
-                    </div>
-                </label>
-                <label className="flex items-center gap-3 p-3 rounded-lg border border-transparent hover:bg-white/5 cursor-pointer transition-colors">
-                    <input 
-                        type="radio" 
-                        name="lunch" 
-                        value="none" 
-                        checked={lunchPolicy === "none"} 
-                        onChange={() => setLunchPolicy("none")}
-                        className="w-4 h-4 accent-primary" 
-                    />
-                    <div>
-                        <div className="font-bold">お昼休憩なし</div>
-                        <div className="text-sm text-muted-foreground">お昼休みは不要、または別の時間に取ります。</div>
-                    </div>
-                </label>
+        {/* メインカード */}
+        <div className="relative rounded-3xl border border-white/10 bg-linear-to-br from-secondary/60 to-background/80 backdrop-blur-xl p-8 shadow-2xl">
+          
+          {/* ソンタくんアバター */}
+          <div className="absolute -top-14 left-1/2 -translate-x-1/2">
+            <div className="relative w-28 h-28 rounded-full overflow-hidden ring-4 ring-primary/30 shadow-2xl bg-secondary">
+              <Image src="/sontakun.jpg" alt="Sontaくん" fill className="object-cover" priority />
             </div>
-        </section>
+          </div>
 
-        {/* Custom Instructions */}
-        <section className="space-y-4 p-6 rounded-2xl bg-secondary/20 border border-white/5">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-                <Mic className="w-5 h-5 text-indigo-400" />
-                Sontaくんへの指示（自由記述）
-            </h2>
+          {/* ヘッダー */}
+          <div className="pt-14 pb-6 text-center space-y-2">
+            <h1 className="text-2xl font-bold bg-linear-to-r from-primary via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Sontaくんカスタマイズ
+            </h1>
             <p className="text-sm text-muted-foreground">
-                特定の曜日や時間帯についての要望があれば、自由に書いてください。<br/>
-                （例：「今週の金曜日は予定があるから入れないで」「水曜日の午前中は集中したい」「ギャル語で話して」など）
+              あなたの働き方に合わせて提案ロジックを調整
             </p>
-            <Textarea 
-                placeholder="ここに指示を入力..." 
-                className="min-h-[150px] bg-black/20"
+          </div>
+
+          <div className="space-y-6">
+            {/* お昼休みのルール */}
+            <section className="space-y-4 p-5 rounded-2xl bg-black/20 border border-white/5">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <Coffee className="w-4 h-4 text-amber-500" />
+                </span>
+                お昼休みのルール
+              </h2>
+              <div className="space-y-2">
+                {[
+                  { value: "avoid", label: "しっかり休む", desc: "12:00〜13:00 は予定を入れない", default: true },
+                  { value: "allow", label: "柔軟に調整する", desc: "必要であれば12時台も候補に" },
+                  { value: "none", label: "お昼休憩なし", desc: "別の時間に取ります" },
+                ].map((opt) => (
+                  <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${lunchPolicy === opt.value ? 'border-primary/50 bg-primary/5' : 'border-white/5 hover:bg-white/5'}`}>
+                    <input 
+                      type="radio" 
+                      name="lunch" 
+                      value={opt.value} 
+                      checked={lunchPolicy === opt.value} 
+                      onChange={() => setLunchPolicy(opt.value as typeof lunchPolicy)}
+                      className="w-4 h-4 accent-primary" 
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium flex items-center gap-2">
+                        {opt.label}
+                        {opt.default && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">デフォルト</span>}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{opt.desc}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </section>
+
+            {/* カスタム指示 */}
+            <section className="space-y-4 p-5 rounded-2xl bg-black/20 border border-white/5">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                  <Mic className="w-4 h-4 text-indigo-400" />
+                </span>
+                Sontaくんへの指示
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                特定の曜日や時間帯についての要望を自由に書いてください
+              </p>
+              <Textarea 
+                placeholder="例: 今週の金曜は予定があるから入れないで、水曜午前は集中したい..." 
+                className="min-h-[120px] bg-black/30 border-white/10 rounded-xl resize-none"
                 value={customInstructions}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomInstructions(e.target.value)}
-            />
-        </section>
+              />
+            </section>
 
-        <div className="pt-4 flex justify-between">
-            <Button variant="ghost" onClick={handleReset} disabled={loading} className="text-muted-foreground hover:text-red-400">
-                設定をリセット
-            </Button>
-            <Button size="lg" onClick={handleSave} disabled={loading} className="font-bold">
-                {loading ? "保存中..." : (
-                    <>
-                        <Save className="w-4 h-4 mr-2" />
-                        設定を保存する
-                    </>
+            {/* ボタン */}
+            <div className="flex items-center justify-between pt-4">
+              <Button 
+                variant="ghost" 
+                onClick={handleReset} 
+                disabled={loading} 
+                className="text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                リセット
+              </Button>
+              <Button 
+                size="lg" 
+                onClick={handleSave} 
+                disabled={loading} 
+                className="font-bold rounded-xl bg-linear-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90 shadow-lg shadow-primary/20"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-spin">🔄</span>
+                    保存中...
+                  </span>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    設定を保存
+                  </>
                 )}
-            </Button>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

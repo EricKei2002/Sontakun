@@ -210,7 +210,8 @@ export async function sendInvitationEmail(options: {
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f23; color: #e2e8f0; padding: 20px; }
     .container { max-width: 500px; margin: 0 auto; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 32px; border: 1px solid rgba(255,255,255,0.1); }
-    .logo { text-align: center; font-size: 48px; margin-bottom: 16px; }
+    .logo { text-align: center; margin-bottom: 16px; }
+    .logo img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid rgba(167, 139, 250, 0.3); }
     h1 { text-align: center; color: #a78bfa; font-size: 24px; margin-bottom: 8px; }
     .subtitle { text-align: center; color: #94a3b8; margin-bottom: 32px; }
     .info-block { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
@@ -223,7 +224,7 @@ export async function sendInvitationEmail(options: {
 </head>
 <body>
   <div class="container">
-    <div class="logo">🙇</div>
+    <div class="logo"><img src="https://sontakun.burst.style/sontakun.jpg" alt="ソンタくん"></div>
     <h1>日程調整のご依頼</h1>
     <p class="subtitle">${options.recruiterName}様から面談のご依頼がありました</p>
     

@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ConnectCalendarButton } from "@/components/connect-calendar-button";
 import { ConfirmSlotButton } from "@/components/confirm-slot-button";
-import { Check } from "lucide-react";
+import { Check, Plus, Settings, Calendar, Clock, ExternalLink } from "lucide-react";
 import { CalendarEventList } from "@/components/calendar-event-list";
 import { DeleteInterviewButton } from "@/components/delete-interview-button";
 import { DisconnectCalendarButton } from "@/components/disconnect-calendar-button";
@@ -38,7 +39,6 @@ export default async function DashboardPage() {
   
   if (session.provider_token) {
       try {
-          // Verify access by making a lightweight call, suppress logs on failure
           const { listGoogleCalendarEvents } = await import("@/lib/google-calendar");
           await listGoogleCalendarEvents(session.provider_token, new Date().toISOString(), 1, false);
           isConnected = true;
@@ -54,131 +54,184 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <main className="container mx-auto px-4 py-8 min-h-[calc(100vh-4rem)]">
-       <div className="flex items-center justify-between mb-8">
-         <h1 className="text-3xl font-bold">ダッシュボード</h1>
-         <div className="flex gap-4">
-             <Link href="/settings">
-                <Button variant="outline">
-                    ⚙️ Sontaくんをカスタマイズ
-                </Button>
-             </Link>
-             <Link href="/interviews/new">
-                <Button className="bg-primary hover:bg-primary/90 text-white font-bold">
-                    + 新規作成
-                </Button>
-             </Link>
-         </div>
-       </div>
+    <main className="min-h-[calc(100vh-4rem)] py-8 px-4 relative overflow-hidden">
+      {/* 背景装飾 */}
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
-       <div className="mb-8 p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold mb-1">その予定、Sontaくんが入れとくよ。</h2>
-            <p className="text-sm text-muted-foreground">Googleカレンダーと連携すると、確定した日程を自動で書き込みます。</p>
+      <div className="relative z-10 max-w-5xl mx-auto">
+        {/* ヘッダー */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="relative w-14 h-14 rounded-full overflow-hidden ring-2 ring-primary/30 shadow-lg">
+              <Image src="/sontakun.jpg" alt="Sontaくん" fill className="object-cover" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold bg-linear-to-r from-primary via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                ダッシュボード
+              </h1>
+              <p className="text-sm text-muted-foreground">おかえりなさい！</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Link href="/settings">
+              <Button variant="outline" className="border-white/10 hover:bg-white/5">
+                <Settings className="w-4 h-4 mr-2" />
+                カスタマイズ
+              </Button>
+            </Link>
+            <Link href="/interviews/new">
+              <Button className="bg-linear-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90 font-bold shadow-lg shadow-primary/20">
+                <Plus className="w-4 h-4 mr-2" />
+                新規作成
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* カレンダー連携 */}
+        <div className="mb-6 p-5 rounded-2xl bg-linear-to-br from-secondary/60 to-background/80 backdrop-blur-xl border border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-bold">Googleカレンダー連携</h2>
+              <p className="text-xs text-muted-foreground">確定した日程を自動で書き込みます</p>
+            </div>
           </div>
           {isConnected ? (
-              <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 text-green-400 font-bold bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
-                      <Check className="w-4 h-4" />
-                      連携済み
-                  </div>
-                  <DisconnectCalendarButton />
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-green-400 font-medium bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
+                <Check className="w-4 h-4" />
+                連携済み
               </div>
+              <DisconnectCalendarButton />
+            </div>
           ) : (
-              <ConnectCalendarButton userEmail={user.email} />
+            <ConnectCalendarButton userEmail={user.email} />
           )}
-       </div>
-       
-       <div className="mb-8">
+        </div>
+        
+        {/* カレンダーイベント */}
+        <div className="mb-8">
           <CalendarEventList />
-       </div>
+        </div>
 
-       <div className="grid gap-4">
+        {/* 面談リスト */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <Clock className="w-5 h-5 text-primary" />
+            面談一覧
+          </h2>
+          
           {!interviews || interviews.length === 0 ? (
-             <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10">
-                <p className="text-muted-foreground mb-4">まだ面談がありません</p>
-                <Link href="/interviews/new">
-                    <Button variant="outline">最初の面談を作る</Button>
-                </Link>
-             </div>
+            <div className="text-center py-16 rounded-2xl bg-linear-to-br from-secondary/60 to-background/80 backdrop-blur-xl border border-white/10">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-3xl">📋</span>
+              </div>
+              <p className="text-muted-foreground mb-4">まだ面談がありません</p>
+              <Link href="/interviews/new">
+                <Button className="bg-linear-to-r from-primary to-purple-500 hover:opacity-90">
+                  <Plus className="w-4 h-4 mr-2" />
+                  最初の面談を作る
+                </Button>
+              </Link>
+            </div>
           ) : (
-            interviews.map((interview) => (
-                <div key={interview.id} className="p-6 rounded-xl bg-secondary/30 border border-white/5 hover:border-primary/30 transition-colors">
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h2 className="text-xl font-bold">{interview.title}</h2>
-                            <p className="text-xs text-muted-foreground">
-                                {new Date(interview.created_at).toLocaleDateString('ja-JP')} 作成
-                            </p>
-                        </div>
-                        <span className={`px-2 py-1 rounded text-xs font-mono border ${
-                            interview.status === 'active' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 
-                            interview.status === 'confirmed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                            interview.status === 'pending_confirmation' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
-                            'bg-gray-500/10 text-gray-400 border-gray-500/20'
-                        }`}>
-                            {interview.status === 'active' ? '調整中' : 
-                             interview.status === 'confirmed' ? '確定済み' : 
-                             interview.status === 'pending_confirmation' ? '確認待ち' : 
-                             interview.status}
-                        </span>
-                        <div className="ml-4">
-                            <DeleteInterviewButton interviewId={interview.id} />
-                        </div>
+            <div className="grid gap-4">
+              {interviews.map((interview) => (
+                <div key={interview.id} className="p-6 rounded-2xl bg-linear-to-br from-secondary/60 to-background/80 backdrop-blur-xl border border-white/10 hover:border-primary/30 transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold">{interview.title}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(interview.created_at).toLocaleDateString('ja-JP')} 作成
+                      </p>
                     </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                        interview.status === 'active' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 
+                        interview.status === 'confirmed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                        interview.status === 'pending_confirmation' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                        'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                      }`}>
+                        {interview.status === 'active' ? '🕐 調整中' : 
+                         interview.status === 'confirmed' ? '✅ 確定' : 
+                         interview.status === 'pending_confirmation' ? '⏳ 確認待ち' : 
+                         interview.status}
+                      </span>
+                      <DeleteInterviewButton interviewId={interview.id} />
+                    </div>
+                  </div>
 
-                    {/* Candidate Responses */}
-                    <div className="mb-4 space-y-3">
-                        {interview.availabilities?.map((av: Availability) => (
-                            <div key={av.id} className="bg-black/20 p-4 rounded-lg border border-white/5">
-                                <div className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap bg-white/5 p-2 rounded">
-                                    {av.extracted_json?.formal_message_japanese || av.raw_text}
-                                </div>
-                                
-                                {av.final_selected_slot ? (
-                                    <div className="text-green-400 text-sm font-bold flex items-center">
-                                        <Check className="w-4 h-4 mr-1" />
-                                        確定日時: {new Date(av.final_selected_slot).toLocaleString('ja-JP')}
-                                    </div>
-                                ) : (
-                                        <div className="grid gap-2 sm:grid-cols-2">
-                                            {av.extracted_json?.candidate_slots?.map((slot: CandidateSlot, i: number) => (
-                                                <div key={i} className="flex items-center justify-between bg-white/5 p-2 rounded border border-white/10">
-                                                    <span className="text-sm font-mono">
-                                                        {new Date(slot.start).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                        <br/>~ {new Date(slot.end).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                    {interview.status !== 'confirmed' && (
-                                                        <ConfirmSlotButton 
-                                                            interviewId={interview.id}
-                                                            availabilityId={av.id}
-                                                            slotStart={slot.start}
-                                                            slotEnd={slot.end}
-                                                        />
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
+                  {/* 候補者の回答 */}
+                  <div className="mb-4 space-y-3">
+                    {interview.availabilities?.map((av: Availability) => (
+                      <div key={av.id} className="bg-black/20 p-4 rounded-xl border border-white/5">
+                        <div className="text-sm text-muted-foreground mb-3 bg-white/5 p-3 rounded-lg">
+                          {av.extracted_json?.formal_message_japanese || av.raw_text}
+                        </div>
+                        
+                        {av.final_selected_slot ? (
+                          <div className="flex items-center gap-2 text-green-400 font-medium bg-green-500/10 px-4 py-2 rounded-lg w-fit">
+                            <Check className="w-4 h-4" />
+                            確定: {new Date(av.final_selected_slot).toLocaleString('ja-JP')}
+                          </div>
+                        ) : (
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            {av.extracted_json?.candidate_slots?.map((slot: CandidateSlot, i: number) => (
+                              <div key={i} className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-white/10">
+                                <span className="text-sm">
+                                  <span className="font-medium">
+                                    {new Date(slot.start).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', weekday: 'short' })}
+                                  </span>
+                                  <br />
+                                  <span className="text-muted-foreground">
+                                    {new Date(slot.start).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })} - {new Date(slot.end).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </span>
+                                {interview.status !== 'confirmed' && (
+                                  <ConfirmSlotButton 
+                                    interviewId={interview.id}
+                                    availabilityId={av.id}
+                                    slotStart={slot.start}
+                                    slotEnd={slot.end}
+                                  />
                                 )}
-                            </div>
-                        ))}
-                        {(!interview.availabilities || interview.availabilities.length === 0) && (
-                            <p className="text-sm text-gray-500 italic">まだ回答はありません</p>
+                              </div>
+                            ))}
+                          </div>
                         )}
-                    </div>
-                    
-                    <div className="flex gap-2">
-                         <Link href={`/interviews/${interview.id}/share?token=${interview.interview_tokens?.[0]?.token}`}>
-                            <Button variant="outline" size="sm">リンク確認</Button>
-                         </Link>
-                         <Link href={`/interviews/${interview.id}/suggestions`}>
-                            <Button variant="default" size="sm">提案確認</Button>
-                         </Link>
-                    </div>
+                      </div>
+                    ))}
+                    {(!interview.availabilities || interview.availabilities.length === 0) && (
+                      <div className="text-center py-6 bg-black/10 rounded-xl border border-dashed border-white/10">
+                        <p className="text-sm text-muted-foreground">💬 まだ回答はありません</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* アクションボタン */}
+                  <div className="flex gap-2">
+                    <Link href={`/interviews/${interview.id}/share?token=${interview.interview_tokens?.[0]?.token}`}>
+                      <Button variant="outline" size="sm" className="border-white/10 hover:bg-white/5">
+                        <ExternalLink className="w-3 h-3 mr-1" />
+                        リンク確認
+                      </Button>
+                    </Link>
+                    <Link href={`/interviews/${interview.id}/suggestions`}>
+                      <Button size="sm" className="bg-primary/20 text-primary hover:bg-primary/30">
+                        💡 提案確認
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-            ))
+              ))}
+            </div>
           )}
-       </div>
+        </div>
+      </div>
     </main>
   );
 }
