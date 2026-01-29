@@ -1,24 +1,38 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { createInterview } from "../actions";
 
 export function CreateInterviewForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   async function handleSubmit(formData: FormData) {
+      console.log("フォーム送信開始");
       setLoading(true);
       setError(null);
       try {
         const result = await createInterview(formData);
-        if (result && result.error) {
+        console.log("Server Action Result:", result);
+        
+        if (result?.error) {
             setError(result.error);
+            setLoading(false);
+        } else if (result?.success && result?.redirectUrl) {
+            console.log("リダイレクト実行:", result.redirectUrl);
+            // router.pushでは遷移しない場合があるため、window.location.hrefを使用
+            window.location.href = result.redirectUrl;
+            // loadingステートは維持
+        } else {
+            console.error("不明な戻り値:", result);
+            setError("サーバーから予期せぬ応答がありました");
             setLoading(false);
         }
       } catch (e) {
-        console.error(e);
+        console.error("送信エラー:", e);
         setError("予期せぬエラーが発生しました");
         setLoading(false);
       }

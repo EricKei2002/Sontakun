@@ -178,3 +178,66 @@ export async function addToGoogleCalendar(userId: string, event: CalendarEvent) 
     return { success: false, error: errorMessage };
   }
 }
+
+/**
+ * Google Meet REST API (v2) を使用して会議スペースを作成する
+ * カレンダーイベントは作成されず、純粋なMeet URLのみ発行されます
+ */
+export async function createMeetSpace(userId: string, accessToken?: string): Promise<MeetingResult> {
+  try {
+    console.log(`[Meet] Creating space for user: ${userId}`);
+
+    // 1. Supabaseからユーザー情報を取得
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
+    if (userError || !user) {
+      throw new Error(`User not found: ${userError?.message}`);
+    }
+
+    // 2. Google連携情報を取得（Refresh Token用）
+    const googleIdentity = user.identities?.find((id) => id.provider === 'google');
+    // Refresh Tokenがあれば取得
+    const identityData = googleIdentity?.identity_data as { provider_refresh_token?: string } | null;
+    const refreshToken = identityData?.provider_refresh_token;
+
+    // 3. 認証情報のセット
+    if (refreshToken) {
+      // Refresh Tokenがあればベスト
+      oauth2Client.setCredentials({ refresh_token: refreshToken });
+    } else if (accessToken) {
+      // Refresh TokenがなくてもAccess Tokenがあれば一時的にOK
+      console.log('[Meet] Using Access Token fallback');
+      oauth2Client.setCredentials({ access_token: accessToken });
+    } else {
+      throw new Error('Google連携の権限がありません（トークン欠落）。連携ボタンから再認証してください。');
+    }
+
+    // 4. Client設定
+    // ※ setCredentialsしたoauth2Clientを使用
+    const meetClient = google.meet({ version: 'v2', auth: oauth2Client });
+    
+    // spaces.create
+    const response = await meetClient.spaces.create({
+      requestBody: {}, 
+    });
+
+    const meetingUrl = response.data.meetingUri;
+    const spaceId = response.data.name; 
+
+    console.log('[Meet] Space created:', { spaceId, meetingUrl });
+
+    if (!meetingUrl) {
+      throw new Error('Meet URL not returned from API');
+    }
+
+    return {
+      success: true,
+      meetingUrl: meetingUrl,
+      eventId: spaceId || undefined 
+    };
+
+  } catch (error: unknown) {
+    console.error('[Meet] Failed to create space:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return { success: false, error: errorMessage };
+  }
+}

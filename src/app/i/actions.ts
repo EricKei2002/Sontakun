@@ -43,29 +43,9 @@ export async function submitAvailability(token: string, formData: FormData) {
        throw new Error("Token expired");
    }
 
-   // 0. Fetch organizer settings for Persona customization
-   let customInstructions = "";
-   const { data: interview } = await supabaseAdmin
-      .from('interviews')
-      .select('user_id')
-      .eq('id', tokenData.interview_id)
-      .single();
-   
-   if (interview) {
-       const { data: settings } = await supabaseAdmin
-           .from('user_settings')
-           .select('custom_instructions')
-           .eq('user_id', interview.user_id)
-           .single();
-       if (settings?.custom_instructions) {
-           customInstructions = settings.custom_instructions;
-       }
-   }
+   // 0. Fetch organizer settings (Persona logic moved to background API)
 
-   // 1. 抽出 (数秒かかる場合があります)
-   const constraints = await geminiExtractConstraints(rawText, customInstructions);
-   
-   // 2. 使用済みにマーク (Atomicity note: ideal to do in transaction but separate calls fine for MVP)
+   // 1. 使用済みにマーク (Atomicity note: ideal to do in transaction but separate calls fine for MVP)
    const { error: updateError } = await supabaseAdmin
      .from("interview_tokens")
      .update({ is_used: true })
@@ -76,37 +56,33 @@ export async function submitAvailability(token: string, formData: FormData) {
        throw new Error("System error: could not update token status");
    }
 
-   // 3. 保存 (Use normal client or admin, admin is fine here)
-   const { error: insertError } = await supabaseAdmin.from("availabilities").insert({
-       interview_id: tokenData.interview_id,
-       candidate_name: "Candidate", // Future: add name input
-       candidate_email: candidateEmail,
-       raw_text: rawText,
-       extracted_json: constraints
-   });
+   // 2. 保存 (extracted_json is null initially)
+   const { data: availability, error: insertError } = await supabaseAdmin
+       .from("availabilities")
+       .insert({
+           interview_id: tokenData.interview_id,
+           candidate_name: "Candidate",
+           candidate_email: candidateEmail,
+           raw_text: rawText,
+           extracted_json: null // Processing...
+       })
+       .select()
+       .single();
 
    if (insertError) throw insertError;
 
-   // 4. 面接官に通知を送信
-   const { data: interviewDetails } = await supabaseAdmin
-       .from('interviews')
-       .select('user_id, title, recruiter_name')
-       .eq('id', tokenData.interview_id)
-       .single();
-
-   if (interviewDetails) {
-       await supabaseAdmin.from("notifications").insert({
-           user_id: interviewDetails.user_id,
-           type: "availability_submitted",
-           title: "📅 候補者から回答がありました",
-           body: `「${interviewDetails.title}」の面談について、候補者から日程の回答が届きました。`,
-           link: `/interviews/${tokenData.interview_id}/suggestions`,
-           metadata: { 
-               interview_id: tokenData.interview_id,
-               candidate_email: candidateEmail
-           }
-       });
-   }
+   // 3. バックグラウンド処理をトリガー (Fire and Forget)
+   // Note: 本番Vercel環境では `waitUntil` 等が必要だが、Node環境/Dev環境ではこれで動作する
+   const { headers } = await import("next/headers");
+   const headersList = await headers();
+   const host = headersList.get("host");
+   const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+   
+   fetch(`${protocol}://${host}/api/process-availability`, {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ availabilityId: availability.id })
+   }).catch(err => console.error("Background trigger failed", err));
 
    redirect(`/i/${token}/thank-you`);
 }

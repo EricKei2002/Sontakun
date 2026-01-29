@@ -16,6 +16,30 @@ interface ConfirmSlotButtonProps {
 
 type MeetingProvider = 'google_meet' | 'zoom';
 
+function GoogleMeetIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24Z" fill="white" fillOpacity="0.01"/>
+      <path d="M7 9C7 7.9 7.9 7 9 7H15C16.1 7 17 7.9 17 9V15C17 16.1 16.1 17 15 17H9C7.9 17 7 16.1 7 15V9Z" fill="white"/>
+       {/* Simplified colored paths */}
+       <path d="M7 9H12V12H7V9Z" fill="#EA4335"/>
+       <path d="M12 9H17V12H12V9Z" fill="#4285F4"/>
+       <path d="M7 12H12V15H7V12Z" fill="#FBBC04"/>
+       <path d="M12 12H17V15H12V12Z" fill="#34A853"/>
+       <path d="M17 10L21 8V16L17 14V10Z" fill="#34A853"/>
+    </svg>
+  );
+}
+
+function ZoomIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="24" height="24" rx="6" fill="#2D8CFF"/>
+      <path d="M16 11.2V9.4C16 8.52 15.28 7.8 14.4 7.8H6.6C5.72 7.8 5 8.52 5 9.4V14.6C5 15.48 5.72 16.2 6.6 16.2H14.4C15.28 16.2 16 15.48 16 14.6V12.8L19 14.9V9.1L16 11.2Z" fill="white"/>
+    </svg>
+  );
+}
+
 export function ConfirmSlotButton({ 
     interviewId, 
     availabilityId, 
@@ -56,9 +80,9 @@ export function ConfirmSlotButton({
         }
     }
 
-    const providerOptions: { value: MeetingProvider; label: string; icon: string }[] = [
-        { value: 'google_meet', label: 'Google Meet', icon: '📹' },
-        { value: 'zoom', label: 'Zoom', icon: '💻' },
+    const providerOptions: { value: MeetingProvider; label: string; icon: React.ReactNode }[] = [
+        { value: 'google_meet', label: 'Google Meet', icon: <GoogleMeetIcon className="w-5 h-5" /> },
+        { value: 'zoom', label: 'Zoom', icon: <ZoomIcon className="w-5 h-5" /> },
     ];
 
     const selectedOption = providerOptions.find(o => o.value === provider)!;

@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { submitAvailability } from "../actions";
+import { Loader2, Sparkles } from "lucide-react";
 
 interface CandidateFormProps {
   token: string;
@@ -58,13 +59,18 @@ export function CandidateForm({ token, defaultEmail }: CandidateFormProps) {
             type="submit" 
             disabled={loading} 
             size="lg" 
-            className="rounded-full px-10 py-6 text-lg font-bold bg-linear-to-r from-indigo-500 to-purple-600 hover:opacity-90 transition-all shadow-lg shadow-purple-900/20"
+            className="rounded-full px-10 py-6 text-lg font-bold bg-linear-to-r from-indigo-500 to-purple-600 hover:opacity-90 transition-all shadow-lg shadow-purple-900/20 w-full sm:w-auto text-white disabled:opacity-70"
         >
             {loading ? (
                 <span className="flex items-center gap-2">
-                    <span className="animate-spin text-xl">🌀</span> 空気を読んでいます...
+                    <Loader2 className="w-5 h-5 animate-spin text-white" />
+                    <span>Sontaくんが調整中...</span>
                 </span>
-            ) : "AIに送る"}
+            ) : (
+                <span className="flex items-center gap-2">
+                    AIに送る <Sparkles className="w-5 h-5" />
+                </span>
+            )}
         </Button>
        </div>
     </form>

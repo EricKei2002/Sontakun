@@ -89,13 +89,9 @@ export async function createInterview(formData: FormData) {
       });
     }
 
-    redirect(`/dashboard`);
+    return { success: true, redirectUrl: '/interviews/new/success' };
 
   } catch (e) {
-    // redirect() throws an error (NEXT_REDIRECT) which must be re-thrown
-    if (isRedirectError(e)) {
-        throw e;
-    }
     console.error("Unexpected Server Action Error:", e);
     return { 
         error: `Server Action Failed: ${e instanceof Error ? e.message : String(e)}` 

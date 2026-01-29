@@ -16,7 +16,7 @@ export function ConnectCalendarButton({ userEmail }: { userEmail?: string }) {
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-          scopes: "https://www.googleapis.com/auth/calendar.events",
+          scopes: "https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/meetings.space.created",
           queryParams: {
             access_type: "offline",
             prompt: "consent",

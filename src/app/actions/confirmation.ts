@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
-import { addToGoogleCalendar, createGoogleMeetEvent } from "@/app/actions/calendar";
+import { addToGoogleCalendar, createGoogleMeetEvent, createMeetSpace } from "@/app/actions/calendar";
 import { createZoomMeeting } from "@/lib/zoom";
 import { sendConfirmationRequestEmail, sendConfirmedEmail } from "@/lib/email";
 import { format } from "date-fns";
@@ -22,6 +22,10 @@ export async function requestConfirmation(
 ) {
   const supabase = await createClient();
   
+  // provider_tokenを取得するためにセッションを取得
+  const { data: { session } } = await supabase.auth.getSession();
+  const providerToken = session?.provider_token || undefined;
+
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     return { success: false, error: "認証が必要です" };
@@ -44,19 +48,16 @@ export async function requestConfirmation(
   let eventId: string | null = null;
 
   if (provider === 'google_meet') {
-    // Google Meet付きイベントを作成
-    const meetingResult = await createGoogleMeetEvent(user.id, {
-      summary: `[仮] 面談: ${interview.title}`,
-      description: `候補者確認待ち\n※ 承諾後に正式確定されます\nSontaくんによる自動作成`,
-      start: slotStart,
-      end: slotEnd,
-    });
+    // Google Meet REST API (v2) でスペースのみ作成
+    // アクセストークンを渡すことで、Refresh Tokenがない場合でも実行可能にする
+    const meetingResult = await createMeetSpace(user.id, providerToken);
 
     if (meetingResult.success) {
       meetingUrl = meetingResult.meetingUrl || null;
       eventId = meetingResult.eventId || null;
     } else {
-      console.error("Failed to create Google Meet:", meetingResult.error);
+      console.error("Failed to create Google Meet space:", meetingResult.error);
+      return { success: false, error: `Google Meetの作成に失敗しました: ${meetingResult.error}` };
     }
   } else if (provider === 'zoom') {
     // Zoom会議を作成
