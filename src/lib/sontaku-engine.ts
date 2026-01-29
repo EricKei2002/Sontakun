@@ -32,9 +32,15 @@ export function generateSontakuSlots(
   for (let i = 0; i < daysToCheck; i++) {
     const currentDay = addDays(startDate, i);
     const dayName = format(currentDay, "EEEE");
+    const dateStr = format(currentDay, "yyyy-MM-dd");
 
-    // 1. 希望日のフィルター
-    if (constraints.preferred_days && constraints.preferred_days.length > 0) {
+    // 1. 日付フィルター (特定日付 > 曜日)
+    if (constraints.specific_dates && constraints.specific_dates.length > 0) {
+      // 特定の日付が指定されている場合、それに一致するかチェック
+      const isSpecificDate = constraints.specific_dates.includes(dateStr);
+      if (!isSpecificDate) continue;
+    } else if (constraints.preferred_days && constraints.preferred_days.length > 0) {
+      // 特定日付がない場合のみ曜日フィルターを適用
       const match = constraints.preferred_days.some(pd => 
         dayName.toLowerCase().includes(pd.toLowerCase())
       );

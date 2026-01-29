@@ -4,6 +4,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "mock-key");
 
 export interface ExtractedConstraints {
   preferred_days: string[]; // 例: ["Monday", "Friday"]
+  specific_dates: string[]; // 例: ["2024-02-16"] YYYY-MM-DD形式
   time_ranges: { start: string; end: string }[]; // HH:MM 形式
   excluded_periods: { description: string; start?: string; end?: string }[];
   lunch_break_policy: "avoid" | "allow" | "preferred";
@@ -36,10 +37,12 @@ export async function geminiExtractConstraints(
     If the instructions ask for a specific tone (e.g. "speak like a Gyaru", "use Kansai dialect"), you MUST follow it in the "formal_message_japanese" field.
     
     Detect nuances like "lunch time" (usually 12:00-13:00), "start of the day" (09:00-10:00), etc.
+    If user mentions specific dates (e.g., "February 16th"), extract them as "YYYY-MM-DD" in "specific_dates".
     
     Return JSON format:
     {
-      "preferred_days": ["Monday", "Tuesday", ...], 
+      "preferred_days": ["Monday", "Tuesday", ...],
+      "specific_dates": ["YYYY-MM-DD", ...],
       "time_ranges": [{"start": "HH:MM", "end": "HH:MM"}],
       "excluded_periods": [{"description": "reason", "start": "HH:MM", "end": "HH:MM"}],
       "lunch_break_policy": "avoid" | "allow" | "preferred", // If they say "lunch is fine", allow. If "avoid lunch", avoid. Default to "avoid" if ambiguous to be polite.
@@ -65,6 +68,7 @@ export async function geminiExtractConstraints(
     console.log("[Gemini] Using fallback constraints");
     return {
       preferred_days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      specific_dates: [],
       time_ranges: [{ start: "10:00", end: "18:00" }],
       excluded_periods: [],
       lunch_break_policy: "avoid",

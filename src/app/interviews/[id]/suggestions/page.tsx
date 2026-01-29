@@ -124,7 +124,7 @@ export default async function SuggestionsPage({ params }: { params: Promise<{ id
            
           {/* 右側: ベスト5提案 */}
           <div>
-            {slots.length > 0 && (
+            {slots.length > 0 ? (
               <div className="rounded-2xl bg-linear-to-br from-secondary/60 to-background/80 backdrop-blur-xl border border-white/10 p-6">
                 <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
                   <span className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
@@ -192,6 +192,20 @@ export default async function SuggestionsPage({ params }: { params: Promise<{ id
                     );
                   })}
                 </div>
+              </div>
+            ) : (
+              <div className="rounded-2xl bg-linear-to-br from-secondary/60 to-background/80 backdrop-blur-xl border border-white/10 p-8 text-center flex flex-col items-center justify-center">
+                 <div className="w-16 h-16 rounded-full bg-muted/20 flex items-center justify-center mb-4">
+                   <Clock className="w-8 h-8 text-muted-foreground" />
+                 </div>
+                 <h3 className="text-lg font-bold mb-2">候補が見つかりませんでした</h3>
+                 <p className="text-sm text-muted-foreground mb-4">
+                   指定された条件では、空いている日程が見つかりませんでした。<br/>
+                   カレンダーの空き状況を確認するか、候補者からのメッセージを確認してください。
+                 </p>
+                 <Button variant="outline" className="border-white/10">
+                   カレンダーを確認する
+                 </Button>
               </div>
             )}
           </div>
