@@ -16,6 +16,7 @@ export interface Slot {
   end: Date;
   score: number;
   reasons: string[];
+  isFallback?: boolean;
 }
 
 export function generateSontakuSlots(
@@ -24,131 +25,143 @@ export function generateSontakuSlots(
   busySlots: { start: Date; end: Date }[] = [],
   lunchPolicyOverride?: "avoid" | "allow" | "none"
 ): Slot[] {
-  const slots: Slot[] = [];
+  let slots: Slot[] = [];
   const now = new Date();
   const startDate = addDays(startOfDay(now), 1); // 明日からチェック開始
   const daysToCheck = 14; 
 
-  for (let i = 0; i < daysToCheck; i++) {
-    const currentDay = addDays(startDate, i);
-    const dayName = format(currentDay, "EEEE");
-    const dateStr = format(currentDay, "yyyy-MM-dd");
+  // ヘルパー関数: スロット検索実行
+  const findSlots = (relaxed: boolean) => {
+    const foundSlots: Slot[] = [];
+    
+    for (let i = 0; i < daysToCheck; i++) {
+        const currentDay = addDays(startDate, i);
+        const dayName = format(currentDay, "EEEE");
+        const dateStr = format(currentDay, "yyyy-MM-dd");
 
-    // 1. 日付フィルター (特定日付 > 曜日)
-    if (constraints.specific_dates && constraints.specific_dates.length > 0) {
-      // 特定の日付が指定されている場合、それに一致するかチェック
-      const isSpecificDate = constraints.specific_dates.includes(dateStr);
-      if (!isSpecificDate) continue;
-    } else if (constraints.preferred_days && constraints.preferred_days.length > 0) {
-      // 特定日付がない場合のみ曜日フィルターを適用
-      const match = constraints.preferred_days.some(pd => 
-        dayName.toLowerCase().includes(pd.toLowerCase())
-      );
-      if (!match) continue; 
-    }
-
-    // 勤務時間を定義 (デフォルト 9:00 - 18:00)
-    let searchStart = set(currentDay, { hours: 9, minutes: 0 });
-    const searchEnd = set(currentDay, { hours: 18, minutes: 0 });
-
-    // 15分刻みで反復
-    while (isBefore(searchStart, searchEnd)) {
-      const slotEnd = addMinutes(searchStart, interviewDurationMinutes);
-      
-      if (isAfter(slotEnd, searchEnd)) break;
-
-      let score = 0;
-      const reasons: string[] = [];
-
-      // 2. 全体の空き状況チェック
-      const isBusy = busySlots.some(busy => areIntervalsOverlapping(
-        { start: searchStart, end: slotEnd },
-        busy
-      ));
-
-      if (isBusy) {
-        searchStart = addMinutes(searchStart, 15);
-        continue;
-      }
-
-      // 3. 時間帯の制約
-      if (constraints.time_ranges && constraints.time_ranges.length > 0) {
-        let inRange = false;
-        for (const range of constraints.time_ranges) {
-            // 現在の日付に関連して範囲をパース
-            const rStart = parse(range.start, "HH:mm", currentDay);
-            const rEnd = parse(range.end, "HH:mm", currentDay);
-            
-            // スロットが範囲内に完全に収まるかチェック
-            if ((isAfter(searchStart, rStart) || searchStart.getTime() === rStart.getTime()) &&
-                (isBefore(slotEnd, rEnd) || slotEnd.getTime() === rEnd.getTime())) {
-                inRange = true;
-                break;
+        // 1. 日付フィルター
+        if (!relaxed) {
+            if (constraints.specific_dates && constraints.specific_dates.length > 0) {
+                const isSpecificDate = constraints.specific_dates.includes(dateStr);
+                if (!isSpecificDate) continue;
+            } else if (constraints.preferred_days && constraints.preferred_days.length > 0) {
+                const match = constraints.preferred_days.some(pd => 
+                    dayName.toLowerCase().includes(pd.toLowerCase())
+                );
+                if (!match) continue; 
             }
         }
-        if (!inRange) {
+
+        // 勤務時間を定義 (デフォルト 9:00 - 18:00)
+        let searchStart = set(currentDay, { hours: 9, minutes: 0 });
+        const searchEnd = set(currentDay, { hours: 18, minutes: 0 });
+
+        // 15分刻みで反復
+        while (isBefore(searchStart, searchEnd)) {
+            const slotEnd = addMinutes(searchStart, interviewDurationMinutes);
+            if (isAfter(slotEnd, searchEnd)) break;
+
+            let score = relaxed ? -100 : 0; // 緩和モードは初期スコア低
+            const reasons: string[] = [];
+            
+            if (relaxed) {
+                reasons.push("希望日程外");
+            }
+
+            // 2. 全体の空き状況チェック (ここは緩和しない)
+            const isBusy = busySlots.some(busy => areIntervalsOverlapping(
+                { start: searchStart, end: slotEnd },
+                busy
+            ));
+
+            if (isBusy) {
+                searchStart = addMinutes(searchStart, 15);
+                continue;
+            }
+
+            // 3. 時間帯の制約 (緩和モード時は無視、または減点)
+            if (constraints.time_ranges && constraints.time_ranges.length > 0) {
+                let inRange = false;
+                for (const range of constraints.time_ranges) {
+                    const rStart = parse(range.start, "HH:mm", currentDay);
+                    const rEnd = parse(range.end, "HH:mm", currentDay);
+                    if ((isAfter(searchStart, rStart) || searchStart.getTime() === rStart.getTime()) &&
+                        (isBefore(slotEnd, rEnd) || slotEnd.getTime() === rEnd.getTime())) {
+                        inRange = true;
+                        break;
+                    }
+                }
+                if (!inRange) {
+                    if (!relaxed) {
+                        searchStart = addMinutes(searchStart, 15);
+                        continue;
+                    } else {
+                        score -= 50;
+                        reasons.push("時間帯外 (-50)");
+                    }
+                }
+            }
+
+            // 4. 忖度（ソンタク）スコアリング
+            // ランチ (12:00 - 13:00)
+            const lunchStart = set(currentDay, { hours: 12, minutes: 0 });
+            const lunchEnd = set(currentDay, { hours: 13, minutes: 0 });
+            const overlapsLunch = areIntervalsOverlapping(
+                { start: searchStart, end: slotEnd },
+                { start: lunchStart, end: lunchEnd }
+            );
+
+            const effectiveLunchPolicy = lunchPolicyOverride || constraints.lunch_break_policy;
+
+            if (effectiveLunchPolicy === 'avoid') {
+                if (overlapsLunch) {
+                    score -= 50;
+                    reasons.push("ランチタイムに干渉 (-50)");
+                } else {
+                    score += 20;
+                    if (!relaxed) reasons.push("ランチタイムを考慮 (+20)");
+                }
+            } else if (effectiveLunchPolicy === 'preferred') {
+                if (overlapsLunch) {
+                    score += 30;
+                    reasons.push("ランチミーティング推奨 (+30)");
+                }
+            } else if (effectiveLunchPolicy === 'none') {
+                if (overlapsLunch) {
+                    score += 10; 
+                    reasons.push("昼食時間帯も可 (+10)");
+                }
+            } else if (effectiveLunchPolicy === 'allow') {
+                if (overlapsLunch) {
+                    reasons.push("ランチタイム許容");
+                }
+            }
+
+            // クリーンな開始時間ボーナス
+            if (searchStart.getMinutes() === 0 || searchStart.getMinutes() === 30) {
+                score += 5;
+            }
+
+            foundSlots.push({
+                start: searchStart,
+                end: slotEnd,
+                score,
+                reasons,
+                isFallback: relaxed
+            });
+
             searchStart = addMinutes(searchStart, 15);
-            continue;
         }
-      }
-
-      // 4. 忖度（ソンタク）スコアリング
-
-      // ランチ (12:00 - 13:00)
-      const lunchStart = set(currentDay, { hours: 12, minutes: 0 });
-      const lunchEnd = set(currentDay, { hours: 13, minutes: 0 });
-      const overlapsLunch = areIntervalsOverlapping(
-        { start: searchStart, end: slotEnd },
-        { start: lunchStart, end: lunchEnd }
-      );
-
-      const effectiveLunchPolicy = lunchPolicyOverride || constraints.lunch_break_policy;
-
-      if (effectiveLunchPolicy === 'avoid') {
-        if (overlapsLunch) {
-            score -= 50;
-            reasons.push("ランチタイムに干渉 (-50)");
-        } else {
-            score += 20;
-            reasons.push("ランチタイムを考慮 (+20)");
-        }
-      } else if (effectiveLunchPolicy === 'preferred') {
-         if (overlapsLunch) {
-             score += 30;
-             reasons.push("ランチミーティング推奨 (+30)");
-         }
-      } else if (effectiveLunchPolicy === 'none') {
-          // Lunch is not protected. No penalty, maybe slight bonus for efficiency?
-          if (overlapsLunch) {
-              score += 10; 
-              reasons.push("昼食時間帯も可 (+10)");
-          }
-      } else if (effectiveLunchPolicy === 'allow') {
-          // Neutral
-          if (overlapsLunch) {
-              reasons.push("ランチタイム許容");
-          }
-      }
-
-      // クリーンな開始時間ボーナス
-      if (searchStart.getMinutes() === 0 || searchStart.getMinutes() === 30) {
-          score += 5;
-          // reasons.push("区切りの良い開始時間 (+5)"); // 冗長すぎるためコメントアウト
-      }
-
-      // バッファーのヒント (ユーザーが具体的にバッファーを求めた場合、ギャップのあるスロットを優先する可能性がありますが、
-      // ここではbusySlots以外の隣接する会議の制約がないため、完全なスケジュールコンテキストなしではバッファーロジックを完全に実装することはできません。
-      // Sontakun 2.0の機能です。)
-
-      slots.push({
-          start: searchStart,
-          end: slotEnd,
-          score,
-          reasons
-      });
-
-      searchStart = addMinutes(searchStart, 15);
     }
+    return foundSlots;
+  };
+
+  // 1. まず厳密検索
+  slots = findSlots(false);
+
+  // 2. 見つからなければ緩和検索 (フォールバック)
+  if (slots.length === 0) {
+     slots = findSlots(true);
   }
 
   // 重複するスロットを排除しますか？

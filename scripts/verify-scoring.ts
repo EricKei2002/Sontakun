@@ -4,6 +4,7 @@ import { ExtractedConstraints } from "../src/lib/gemini";
 // モック制約: ユーザーはランチミーティングを嫌い、月曜日を好む
 const constraints: ExtractedConstraints = {
   preferred_days: ["Monday", "Tuesday"],
+  specific_dates: [],
   time_ranges: [], // 厳密な範囲指定なし
   excluded_periods: [],
   lunch_break_policy: "avoid",

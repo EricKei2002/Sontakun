@@ -132,6 +132,16 @@ export default async function SuggestionsPage({ params }: { params: Promise<{ id
                   </span>
                   ベスト5
                 </h2>
+                {slots[0]?.isFallback && (
+                  <div className="mb-4 p-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-sm text-orange-200">
+                    <p className="font-bold flex items-center gap-2">
+                       <span className="text-lg">⚠️</span> 希望条件での空きがありませんでした
+                    </p>
+                    <p className="mt-1 opacity-90">
+                      代わりに、現在空いているおすすめの時間帯を提案します。
+                    </p>
+                  </div>
+                )}
                 <div className="space-y-4">
                   {slots.slice(0, 5).map((slot: Slot, i: number) => {
                     const rank = i + 1;
