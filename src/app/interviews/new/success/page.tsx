@@ -13,7 +13,7 @@ export default function InterviewSentPage() {
         
         <div className="w-24 h-24 mx-auto bg-green-500/10 rounded-full flex items-center justify-center border border-green-500/20">
           <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/40 animate-bounce-subtle">
-            <Check className="w-8 h-8 text-black stroke-[3]" />
+            <Check className="w-8 h-8 text-black stroke-3" />
           </div>
         </div>
 

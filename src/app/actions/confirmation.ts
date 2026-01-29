@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
-import { addToGoogleCalendar, createGoogleMeetEvent, createMeetSpace } from "@/app/actions/calendar";
+import { addToGoogleCalendar, createMeetSpace } from "@/app/actions/calendar";
 import { createZoomMeeting } from "@/lib/zoom";
 import { sendConfirmationRequestEmail, sendConfirmedEmail } from "@/lib/email";
 import { format } from "date-fns";

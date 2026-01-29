@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { redirect } from "next/navigation";
+
 import { sendInvitationEmail } from "@/lib/email";
 
 export async function createInterview(formData: FormData) {
@@ -99,13 +99,4 @@ export async function createInterview(formData: FormData) {
   }
 }
 
-function isRedirectError(error: unknown): boolean {
-    if (typeof error !== 'object' || error === null) {
-        return false;
-    }
-    const e = error as { digest?: string; message?: string };
-    return Boolean(
-        e.digest?.startsWith('NEXT_REDIRECT') || 
-        e.message === 'NEXT_REDIRECT'
-    );
-}
+

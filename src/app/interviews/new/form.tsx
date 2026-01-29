@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { createInterview } from "../actions";
 
 export function CreateInterviewForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   async function handleSubmit(formData: FormData) {
       console.log("フォーム送信開始");

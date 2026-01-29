@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js"; // Direct client for Admin
-import { geminiExtractConstraints } from "@/lib/gemini";
 import { redirect } from "next/navigation";
 
 export async function submitAvailability(token: string, formData: FormData) {
