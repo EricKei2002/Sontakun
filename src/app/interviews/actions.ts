@@ -1,7 +1,9 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
+import { sendInvitationEmail } from "@/lib/email";
 
 export async function createInterview(formData: FormData) {
   try {
@@ -10,6 +12,10 @@ export async function createInterview(formData: FormData) {
     }
 
     const supabase = await createClient();
+    const supabaseAdmin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
     
     // Check Authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -19,10 +25,17 @@ export async function createInterview(formData: FormData) {
 
     const title = formData.get("title") as string;
     const recruiter_name = formData.get("recruiter_name") as string;
+    const candidate_email = formData.get("candidate_email") as string;
+
+    // バリデーション
+    if (!candidate_email || !candidate_email.includes("@")) {
+        return { error: "有効なメールアドレスを入力してください" };
+    }
 
     const { data: interview, error } = await supabase.from("interviews").insert({
         title,
         recruiter_name,
+        candidate_email,
         user_id: user.id
     }).select().single();
 
@@ -49,7 +62,34 @@ export async function createInterview(formData: FormData) {
         return { error: `Token creation failed: ${tokenError.message}` };
     }
 
-    redirect(`/interviews/${interview.id}/share?token=${tokenData.token}`);
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const inviteUrl = `${baseUrl}/i/${tokenData.token}`;
+
+    // 候補者がSontakunユーザーかチェック
+    const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
+    const candidateUser = existingUser?.users?.find(u => u.email === candidate_email);
+
+    if (candidateUser) {
+      // 登録済みユーザー → アプリ内通知を作成
+      await supabaseAdmin.from("notifications").insert({
+        user_id: candidateUser.id,
+        type: "interview_invitation",
+        title: `${recruiter_name}様から日程調整のご依頼`,
+        body: `「${title}」の面談日程を入力してください`,
+        link: inviteUrl,
+        metadata: { interview_id: interview.id }
+      });
+    } else {
+      // 未登録ユーザー → 招待メールを送信
+      await sendInvitationEmail({
+        to: candidate_email,
+        interviewTitle: title,
+        recruiterName: recruiter_name,
+        inviteUrl: inviteUrl
+      });
+    }
+
+    redirect(`/dashboard`);
 
   } catch (e) {
     // redirect() throws an error (NEXT_REDIRECT) which must be re-thrown

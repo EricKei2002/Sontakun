@@ -7,7 +7,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { submitAvailability } from "../actions";
 
-export function CandidateForm({ token }: { token: string }) {
+interface CandidateFormProps {
+  token: string;
+  defaultEmail?: string;
+}
+
+export function CandidateForm({ token, defaultEmail }: CandidateFormProps) {
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(formData: FormData) {
@@ -25,6 +30,7 @@ export function CandidateForm({ token }: { token: string }) {
            type="email"
            id="email"
            name="email"
+           defaultValue={defaultEmail}
            className="w-full p-4 rounded-xl border border-white/10 bg-black/20 text-base placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:outline-none transition-all shadow-inner"
            placeholder="your.email@example.com"
            required

@@ -26,10 +26,10 @@ export default function NewInterviewPage() {
               <h3 className="text-xl font-bold mb-2 text-primary">はじめまして！Sontaくんです。</h3>
               <p className="text-muted-foreground leading-relaxed">
                 日程調整のお手伝いをするよ。<br/>
-                まずは<span className="text-foreground font-bold">面談のタイトル</span>と<br/>
-                <span className="text-foreground font-bold">あなたの名前</span>を教えてね。<br/><br/>
-                入力できたら下のボタンを押して<br/>
-                候補者に送るリンクを作ろう！
+                <span className="text-foreground font-bold">面談のタイトル</span>と<br/>
+                <span className="text-foreground font-bold">候補者のメールアドレス</span>を入力するだけ！<br/><br/>
+                招待を送信したら、<br/>
+                あとは僕がいい感じに調整するよ！
               </p>
            </div>
 

@@ -14,11 +14,15 @@ export default async function CandidatePage({ params }: { params: Promise<{ toke
   const supabase = await createClient();
   
   const { data: tokenData } = await supabase.from('interview_tokens')
-    .select('*, interviews(id, title, recruiter_name, status)')
+    .select('*, interviews(id, title, recruiter_name, status, candidate_email)')
     .eq('token', token)
     .single();
   
   if (!tokenData) return notFound();
+
+  // ログインユーザーのメールまたは招待時のメールを取得
+  const { data: { user } } = await supabase.auth.getUser();
+  const candidateEmail = user?.email || tokenData.interviews?.candidate_email || '';
 
   // Validate Expiration
   if (new Date(tokenData.expires_at) < new Date()) {
@@ -118,7 +122,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ toke
                 </p>
             </div>
             
-            <CandidateForm token={token} />
+            <CandidateForm token={token} defaultEmail={candidateEmail} />
         </div>
      </div>
   );

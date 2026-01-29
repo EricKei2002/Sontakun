@@ -3,6 +3,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button"; 
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "./notification-bell";
 
 export async function Header() {
   const supabase = await createClient();
@@ -30,6 +31,7 @@ export async function Header() {
              <Link href="/dashboard">
                 <Button variant="ghost" className="text-foreground">Sontaくん Dashboard </Button> 
              </Link>
+             <NotificationBell />
              <span className="text-sm text-muted-foreground hidden sm:inline">
                 {user.email}
              </span>

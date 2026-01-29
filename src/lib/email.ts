@@ -185,3 +185,81 @@ export async function sendConfirmedEmail(options: {
     return { success: false, error: errorMessage };
   }
 }
+
+/**
+ * 未登録ユーザーに招待メールを送信
+ */
+export async function sendInvitationEmail(options: {
+  to: string;
+  interviewTitle: string;
+  recruiterName: string;
+  inviteUrl: string;
+}): Promise<EmailResult> {
+  try {
+    console.log('[Email] Sending invitation to:', options.to);
+
+    const { data, error } = await resend.emails.send({
+      from: `ソンタくん <${FROM_EMAIL}>`,
+      to: options.to,
+      subject: `【招待】${options.recruiterName}様から日程調整のご依頼`,
+      html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f23; color: #e2e8f0; padding: 20px; }
+    .container { max-width: 500px; margin: 0 auto; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 32px; border: 1px solid rgba(255,255,255,0.1); }
+    .logo { text-align: center; font-size: 48px; margin-bottom: 16px; }
+    h1 { text-align: center; color: #a78bfa; font-size: 24px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #94a3b8; margin-bottom: 32px; }
+    .info-block { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .info-label { color: #64748b; font-size: 12px; margin-bottom: 4px; }
+    .info-value { color: white; font-size: 18px; font-weight: bold; }
+    .cta { text-align: center; margin: 32px 0; }
+    .cta a { display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: bold; font-size: 16px; }
+    .footer { text-align: center; color: #64748b; font-size: 12px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🙇</div>
+    <h1>日程調整のご依頼</h1>
+    <p class="subtitle">${options.recruiterName}様から面談のご依頼がありました</p>
+    
+    <div class="info-block">
+      <div class="info-label">面談タイトル</div>
+      <div class="info-value">${options.interviewTitle}</div>
+    </div>
+    
+    <p style="text-align: center; color: #94a3b8; margin-bottom: 24px;">
+      下のボタンから、ご都合の良い日時をお知らせください。<br>
+      AIがあなたの予定を分析し、最適な日程を見つけます。
+    </p>
+    
+    <div class="cta">
+      <a href="${options.inviteUrl}">日程を入力する</a>
+    </div>
+    
+    <div class="footer">
+      <p>このメールはソンタくんから自動送信されています</p>
+    </div>
+  </div>
+</body>
+</html>
+      `,
+    });
+
+    if (error) {
+      console.error('[Email] Send failed:', error);
+      return { success: false, error: error.message };
+    }
+
+    console.log('[Email] Sent successfully:', data?.id);
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    console.error('[Email] Failed to send:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return { success: false, error: errorMessage };
+  }
+}
