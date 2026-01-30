@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createInterview } from "../actions";
+import { InterviewerAvailabilityEditor } from "@/components/interviewer-availability-editor";
 
 export function CreateInterviewForm() {
   const [loading, setLoading] = useState(false);
@@ -83,6 +84,13 @@ export function CreateInterviewForm() {
            className="w-full h-12 px-4 rounded-xl bg-black/30 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
          />
        </div>
+
+       <div className="pt-4 border-t border-white/10"></div>
+
+       {/* 空き時間エディタ */}
+       <InterviewerAvailabilityEditor />
+
+       <div className="pb-4 border-b border-white/10"></div>
 
        {/* 送信ボタン */}
        <Button 

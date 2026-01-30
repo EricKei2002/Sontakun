@@ -2,6 +2,8 @@
 
 import { google } from 'googleapis';
 import { createClient } from '@supabase/supabase-js';
+import { createClient as createServerClient } from "@/lib/supabase/server";
+import { getSuggestedSlots } from "@/lib/availability";
 
 // 管理者権限でSupabaseを操作するためのクライアント
 // ※ auth.identities にアクセスしてトークンを取り出すために必要
@@ -241,3 +243,24 @@ export async function createMeetSpace(userId: string, accessToken?: string): Pro
     return { success: false, error: errorMessage };
   }
 }
+
+/**
+ * 空き時間を提案する Server Action
+ */
+export async function getSuggestedSlotsAction() {
+  const supabase = await createServerClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session || !session.provider_token) {
+    return { error: "Googleカレンダー連携が必要です" };
+  }
+
+  try {
+    const slots = await getSuggestedSlots(session.provider_token);
+    return { success: true, slots };
+  } catch (error) {
+    console.error("Failed to get suggested slots:", error);
+    return { error: "空き時間の取得に失敗しました" };
+  }
+}
+

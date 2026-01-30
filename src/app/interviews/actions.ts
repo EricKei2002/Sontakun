@@ -26,6 +26,16 @@ export async function createInterview(formData: FormData) {
     const title = formData.get("title") as string;
     const recruiter_name = formData.get("recruiter_name") as string;
     const candidate_email = formData.get("candidate_email") as string;
+    const proposedSlotsJson = formData.get("proposed_slots") as string;
+    
+    let proposedSlots = undefined;
+    if (proposedSlotsJson) {
+        try {
+            proposedSlots = JSON.parse(proposedSlotsJson);
+        } catch (e) {
+            console.error("Failed to parse proposed_slots:", e);
+        }
+    }
 
     // バリデーション
     if (!candidate_email || !candidate_email.includes("@")) {
@@ -36,7 +46,8 @@ export async function createInterview(formData: FormData) {
         title,
         recruiter_name,
         candidate_email,
-        user_id: user.id
+        user_id: user.id,
+        proposed_slots: proposedSlots
     }).select().single();
 
     if (error) {
@@ -85,7 +96,8 @@ export async function createInterview(formData: FormData) {
         to: candidate_email,
         interviewTitle: title,
         recruiterName: recruiter_name,
-        inviteUrl: inviteUrl
+        inviteUrl: inviteUrl,
+        proposedSlots: proposedSlots
       });
     }
 

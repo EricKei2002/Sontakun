@@ -194,9 +194,32 @@ export async function sendInvitationEmail(options: {
   interviewTitle: string;
   recruiterName: string;
   inviteUrl: string;
+  proposedSlots?: { date: string; start: string; end: string }[];
 }): Promise<EmailResult> {
   try {
     console.log('[Email] Sending invitation to:', options.to);
+
+    // 提案日時のHTML生成
+    let slotsHtml = '';
+    if (options.proposedSlots && options.proposedSlots.length > 0) {
+        const slotsList = options.proposedSlots.map(slot => {
+            const date = new Date(slot.date);
+            const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+            // 曜日取得 (簡易)
+            const days = ['日', '月', '火', '水', '木', '金', '土'];
+            const dayStr = days[date.getDay()];
+            return `<div style="margin-bottom: 8px; color: #a78bfa;">・${dateStr}(${dayStr}) ${slot.start}〜${slot.end}</div>`;
+        }).join('');
+
+        slotsHtml = `
+            <div class="info-block" style="background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.2);">
+                <div class="info-label" style="color: #a78bfa;">${options.recruiterName}様のご都合の良い日時（参考）</div>
+                <div style="margin-top: 8px; font-weight: bold;">
+                    ${slotsList}
+                </div>
+            </div>
+        `;
+    }
 
     const { data, error } = await resend.emails.send({
       from: `ソンタくん <${FROM_EMAIL}>`,
@@ -232,6 +255,8 @@ export async function sendInvitationEmail(options: {
       <div class="info-label">面談タイトル</div>
       <div class="info-value">${options.interviewTitle}</div>
     </div>
+
+    ${slotsHtml}
     
     <p style="text-align: center; color: #94a3b8; margin-bottom: 24px;">
       下のボタンから、ご都合の良い日時をお知らせください。<br>

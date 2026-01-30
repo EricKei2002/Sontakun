@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function NewInterviewPage() {
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 py-20 relative overflow-x-hidden">
       {/* 背景装飾 */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
