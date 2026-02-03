@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { PendingConfirmationCard } from "@/components/pending-confirmation-card";
+import { format } from "date-fns";
+import { ja } from "date-fns/locale";
 
 interface PendingSlot {
   start: string;
@@ -103,6 +105,18 @@ export default async function ThankYouPage({ params }: { params: Promise<{ token
     const meetingProvider = (acceptedAvailability?.meeting_provider || 'google_meet') as 'google_meet' | 'zoom';
     const providerLabel = meetingProvider === 'zoom' ? 'Zoom' : 'Google Meet';
 
+    // 日時情報の取得
+    let dateStr = "";
+    let timeStr = "";
+    const slot = acceptedAvailability?.pending_slot as PendingSlot | null;
+    
+    if (slot) {
+      const startDate = new Date(slot.start);
+      const endDate = new Date(slot.end);
+      dateStr = format(startDate, "M月d日(E)", { locale: ja });
+      timeStr = `${format(startDate, "HH:mm")}〜${format(endDate, "HH:mm")}`;
+    }
+
     return (
       <PageWrapper>
         <div className="relative rounded-3xl border border-white/10 bg-linear-to-br from-secondary/60 to-background/80 backdrop-blur-xl p-8 shadow-2xl text-center">
@@ -116,11 +130,26 @@ export default async function ThankYouPage({ params }: { params: Promise<{ token
               <span className="text-4xl">🎉</span>
             </div>
             <h1 className="text-2xl font-bold text-green-400 mb-2">日程が確定しました！</h1>
-            <p className="text-muted-foreground">面談の日程が確定しました</p>
+            
+            {slot && (
+              <div className="my-6 p-4 rounded-xl bg-black/20 border border-white/5 backdrop-blur-sm">
+                <p className="text-sm text-muted-foreground mb-1">面談日時</p>
+                <div className="text-2xl font-bold text-white tracking-wide">
+                  {dateStr}
+                </div>
+                <div className="text-xl font-medium text-white/90">
+                  {timeStr}
+                </div>
+              </div>
+            )}
+
+            {!slot && (
+              <p className="text-muted-foreground">面談の日程が確定しました</p>
+            )}
           </div>
 
           {meetingUrl && (
-            <div className="mt-6">
+            <div className="mt-2">
               <a
                 href={meetingUrl}
                 target="_blank"
